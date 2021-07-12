@@ -40,7 +40,18 @@ export interface BarChartProps extends AbstractChartProps {
   withHorizontalLabels?: boolean;
   /**
    * The number of horizontal lines
+   */  decorator?: Function;
+  /**
+   * Callback that is called when a data point is clicked.
    */
+  onDataPointClick?: (data: {
+    index: number;
+    value: number;
+    dataset: ChartData;
+    x: number;
+    y: number;
+  }) => void;
+  
   segments?: number;
   showBarTops?: boolean;
   showValuesOnTopOfBars?: boolean;
@@ -63,7 +74,8 @@ class BarChart extends AbstractChart<BarChartProps, BarChartState> {
     paddingTop,
     paddingRight,
     barRadius,
-    withCustomBarColorFromData
+    withCustomBarColorFromData,
+    onDataPointClick
   }: Pick<
     Omit<AbstractChartConfig, "data">,
     "width" | "height" | "paddingRight" | "paddingTop" | "barRadius"
@@ -91,6 +103,20 @@ class BarChart extends AbstractChart<BarChartProps, BarChartState> {
           rx={barRadius}
           width={barWidth}
           height={(Math.abs(barHeight) / 4) * 3}
+          const onPress = () => {
+          if (!onDataPointClick) {
+            return;
+          }
+
+          onDataPointClick({
+            index: i,
+            value: x,
+            dataset: data,
+            x: x,
+            y: y,
+            getColor: opacity => this.getColor(dataset, opacity)
+          });
+        };
           fill={
             withCustomBarColorFromData
               ? `url(#customColor_0_${i})`
