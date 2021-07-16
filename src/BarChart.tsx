@@ -39,10 +39,13 @@ export interface BarChartProps extends AbstractChartProps {
    */
   withHorizontalLabels?: boolean;
   /**
-   * The number of horizontal lines
-   */  decorator?: Function;
   /**
-   * Callback that is called when a data point is clicked.
+   * This function takes a [whole bunch](https://github.com/indiespirit/react-native-chart-kit/blob/master/src/line-chart.js#L266)
+   * of stuff and can render extra elements,
+   * such as data point info or additional markup.
+   */
+  decorator?: Function;
+   /** Callback that is called when a data point is clicked.
    */
   onDataPointClick?: (data: {
     index: number;
@@ -82,12 +85,44 @@ class BarChart extends AbstractChart<BarChartProps, BarChartState> {
   > & {
     data: number[];
     withCustomBarColorFromData: boolean;
+    onDataPointClick: BarChartProps["onDataPointClick"];
   }) => {
     const baseHeight = this.calcBaseHeight(data, height);
+    
+    const onPress = () => {
+          if (!onDataPointClick) {
+            return;
+          }
+          onDataPointClick({
+            index: i,
+            value: x,
+            dataset: data,
+            x: x,
+            y: y,
+          });
+        };
 
     return data.map((x, i) => {
       const barHeight = this.calcHeight(x, data, height);
       const barWidth = 32 * this.getBarPercentage();
+      
+      const cx = paddingRight + (i * (width - paddingRight)) / data.length + barWidth / 2
+      const cy = ((barHeight > 0 ? baseHeight - barHeight : baseHeight) / 4) * 3 + paddingTop
+      
+      const onPress = () => {
+          if (!onDataPointClick)) {
+            return;
+          }
+
+          onDataPointClick({
+            index: i,
+            value: x,
+            dataset,
+            x: cx,
+            y: cy,
+          });
+      };
+      
       return (
         <Rect
           key={Math.random()}
@@ -103,20 +138,7 @@ class BarChart extends AbstractChart<BarChartProps, BarChartState> {
           rx={barRadius}
           width={barWidth}
           height={(Math.abs(barHeight) / 4) * 3}
-          const onPress = () => {
-          if (!onDataPointClick) {
-            return;
-          }
-
-          onDataPointClick({
-            index: i,
-            value: x,
-            dataset: data,
-            x: x,
-            y: y,
-            getColor: opacity => this.getColor(dataset, opacity)
-          });
-        };
+          onPress={onPress}
           fill={
             withCustomBarColorFromData
               ? `url(#customColor_0_${i})`
@@ -243,6 +265,8 @@ class BarChart extends AbstractChart<BarChartProps, BarChartState> {
       horizontalLabelRotation = 0,
       withInnerLines = true,
       showBarTops = true,
+      decorator,
+      onDataPointClick,
       withCustomBarColorFromData = false,
       showValuesOnTopOfBars = false,
       flatColor = false,
@@ -296,7 +320,8 @@ class BarChart extends AbstractChart<BarChartProps, BarChartState> {
               ? this.renderHorizontalLines({
                 ...config,
                 count: segments,
-                paddingTop
+                paddingTop,
+                paddingRight
               })
               : null}
           </G>
@@ -349,6 +374,15 @@ class BarChart extends AbstractChart<BarChartProps, BarChartState> {
                 paddingRight: paddingRight as number
               })}
           </G>
+          <G>
+             {decorator &&
+                decorator({
+                  ...config,
+                  data: data.datasets,
+                  paddingTop,
+                  paddingRight
+               })}
+            </G>
         </Svg>
       </View>
     );
