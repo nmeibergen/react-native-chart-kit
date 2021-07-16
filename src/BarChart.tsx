@@ -89,19 +89,6 @@ class BarChart extends AbstractChart<BarChartProps, BarChartState> {
   }) => {
     const baseHeight = this.calcBaseHeight(data, height);
     
-    const onPress = () => {
-          if (!onDataPointClick) {
-            return;
-          }
-          onDataPointClick({
-            index: i,
-            value: x,
-            dataset: data,
-            x: x,
-            y: y,
-          });
-        };
-
     return data.map((x, i) => {
       const barHeight = this.calcHeight(x, data, height);
       const barWidth = 32 * this.getBarPercentage();
@@ -117,7 +104,7 @@ class BarChart extends AbstractChart<BarChartProps, BarChartState> {
           onDataPointClick({
             index: i,
             value: x,
-            dataset,
+            data,
             x: cx,
             y: cy,
           });
@@ -378,7 +365,7 @@ class BarChart extends AbstractChart<BarChartProps, BarChartState> {
              {decorator &&
                 decorator({
                   ...config,
-                  data: data.datasets,
+                  data: data.datasets[0].data,
                   paddingTop,
                   paddingRight
                })}
