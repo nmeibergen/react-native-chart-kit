@@ -45,22 +45,21 @@ export interface BarChartProps extends AbstractChartProps {
    * such as data point info or additional markup.
    */
   decorator?: Function;
-   /** Callback that is called when a data point is clicked.
+  /** Callback that is called when a data point is clicked.
    */
-  onDataPointClick?: (data: {
+  onBarPress?: (data: {
     index: number;
     value: number;
-    dataset: ChartData;
+    // dataset: ChartData;
     x: number;
     y: number;
   }) => void;
-  
+
   segments?: number;
   showBarTops?: boolean;
   showValuesOnTopOfBars?: boolean;
   withCustomBarColorFromData?: boolean;
   flatColor?: boolean;
-  
 }
 
 type BarChartState = {};
@@ -79,38 +78,43 @@ class BarChart extends AbstractChart<BarChartProps, BarChartState> {
     paddingRight,
     barRadius,
     withCustomBarColorFromData,
-    onDataPointClick
+    onBarPress
   }: Pick<
     Omit<AbstractChartConfig, "data">,
     "width" | "height" | "paddingRight" | "paddingTop" | "barRadius"
   > & {
     data: number[];
     withCustomBarColorFromData: boolean;
-    onDataPointClick: BarChartProps["onDataPointClick"];
+    onBarPress: BarChartProps["onBarPress"];
   }) => {
     const baseHeight = this.calcBaseHeight(data, height);
-    
+
     return data.map((x, i) => {
       const barHeight = this.calcHeight(x, data, height);
       const barWidth = 32 * this.getBarPercentage();
-      
-      const cx = paddingRight + (i * (width - paddingRight)) / data.length + barWidth / 2
-      const cy = ((barHeight > 0 ? baseHeight - barHeight : baseHeight) / 4) * 3 + paddingTop
-      
-      const onPress = () => {
-          if (!onDataPointClick)) {
-            return;
-          }
 
-          onDataPointClick({
-            index: i,
-            value: x,
-            data,
-            x: cx,
-            y: cy,
-          });
+      const cx =
+        paddingRight +
+        (i * (width - paddingRight)) / data.length +
+        barWidth / 2;
+      const cy =
+        ((barHeight > 0 ? baseHeight - barHeight : baseHeight) / 4) * 3 +
+        paddingTop;
+
+      const onPress = () => {
+        if (!onBarPress) {
+          return;
+        }
+
+        onBarPress({
+          index: i,
+          value: x,
+          // dataset: data,
+          x: cx,
+          y: cy
+        });
       };
-      
+
       return (
         <Rect
           key={Math.random()}
@@ -196,8 +200,8 @@ class BarChart extends AbstractChart<BarChartProps, BarChartState> {
               {flatColor ? (
                 <Stop offset="1" stopColor={highOpacityColor} stopOpacity="1" />
               ) : (
-                  <Stop offset="1" stopColor={lowOpacityColor} stopOpacity="0" />
-                )}
+                <Stop offset="1" stopColor={lowOpacityColor} stopOpacity="0" />
+              )}
             </LinearGradient>
           );
         })}
@@ -220,13 +224,12 @@ class BarChart extends AbstractChart<BarChartProps, BarChartState> {
     const baseHeight = this.calcBaseHeight(data, height);
 
     const renderLabel = (value: number) => {
-      if(this.props.chartConfig.formatTopBarValue) {
-        return this.props.chartConfig.formatTopBarValue(value)
+      if (this.props.chartConfig.formatTopBarValue) {
+        return this.props.chartConfig.formatTopBarValue(value);
+      } else {
+        return value;
       }
-      else {
-        return value
-      }
-    }
+    };
     return data.map((x, i) => {
       const barHeight = this.calcHeight(x, data, height);
       const barWidth = 32 * this.getBarPercentage();
@@ -237,7 +240,6 @@ class BarChart extends AbstractChart<BarChartProps, BarChartState> {
             paddingRight +
             (i * (width - paddingRight)) / data.length +
             barWidth / 1
-            
           }
           y={((baseHeight - barHeight) / 4) * 3 + paddingTop - 1}
           fill={this.props.chartConfig.color(0.6)}
@@ -283,12 +285,12 @@ class BarChart extends AbstractChart<BarChartProps, BarChartState> {
         (this.props.chartConfig && this.props.chartConfig.decimalPlaces) ?? 2,
       formatYLabel:
         (this.props.chartConfig && this.props.chartConfig.formatYLabel) ||
-        function (label) {
+        function(label) {
           return label;
         },
       formatXLabel:
         (this.props.chartConfig && this.props.chartConfig.formatXLabel) ||
-        function (label) {
+        function(label) {
           return label;
         }
     };
@@ -315,33 +317,33 @@ class BarChart extends AbstractChart<BarChartProps, BarChartState> {
           <G>
             {withInnerLines
               ? this.renderHorizontalLines({
-                ...config,
-                count: segments,
-                paddingTop,
-                paddingRight
-              })
+                  ...config,
+                  count: segments,
+                  paddingTop,
+                  paddingRight
+                })
               : null}
           </G>
           <G>
             {withHorizontalLabels
               ? this.renderHorizontalLabels({
-                ...config,
-                count: segments,
-                data: data.datasets[0].data,
-                paddingTop: paddingTop as number,
-                paddingRight: paddingRight as number
-              })
+                  ...config,
+                  count: segments,
+                  data: data.datasets[0].data,
+                  paddingTop: paddingTop as number,
+                  paddingRight: paddingRight as number
+                })
               : null}
           </G>
           <G>
             {withVerticalLabels
               ? this.renderVerticalLabels({
-                ...config,
-                labels: data.labels,
-                paddingRight: paddingRight as number,
-                paddingTop: paddingTop as number,
-                horizontalOffset: barWidth * this.getBarPercentage()
-              })
+                  ...config,
+                  labels: data.labels,
+                  paddingRight: paddingRight as number,
+                  paddingTop: paddingTop as number,
+                  horizontalOffset: barWidth * this.getBarPercentage()
+                })
               : null}
           </G>
           <G>
@@ -372,14 +374,14 @@ class BarChart extends AbstractChart<BarChartProps, BarChartState> {
               })}
           </G>
           <G>
-             {decorator &&
-                decorator({
-                  ...config,
-                  data: data.datasets[0].data,
-                  paddingTop,
-                  paddingRight
-               })}
-            </G>
+            {decorator &&
+              decorator({
+                ...config,
+                data: data.datasets[0].data,
+                paddingTop,
+                paddingRight
+              })}
+          </G>
         </Svg>
       </View>
     );
