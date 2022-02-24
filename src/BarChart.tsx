@@ -299,6 +299,17 @@ class BarChart extends AbstractChart<BarChartProps, BarChartState> {
       <View style={[style, { flexDirection: "row" }]}>
         <View style={{ width: 100 }}>
           <Svg height={height} width={100}>
+            {this.renderDefs({
+              ...config,
+              ...this.props.chartConfig
+            })}
+            <Rect
+              width="100%"
+              height={height}
+              // rx={borderRadius}
+              // ry={borderRadius}
+              fill="url(#backgroundGradient)"
+            />
             <G>
               {withHorizontalLabels
                 ? this.renderHorizontalLabels({
@@ -326,8 +337,8 @@ class BarChart extends AbstractChart<BarChartProps, BarChartState> {
             <Rect
               width="100%"
               height={height}
-              rx={borderRadius}
-              ry={borderRadius}
+              // rx={borderRadius}
+              // ry={borderRadius}
               fill="url(#backgroundGradient)"
             />
             <G>
