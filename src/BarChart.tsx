@@ -1,5 +1,5 @@
 import React from "react";
-import { ScrollView, View, ViewStyle } from "react-native";
+import { ScrollView, ScrollViewProps, View, ViewStyle } from "react-native";
 import {
   Defs,
   G,
@@ -55,6 +55,7 @@ export interface BarChartProps extends AbstractChartProps {
     y: number;
   }) => void;
   yLabelsWidth?: number;
+  scrollViewProps?: ScrollViewProps;
 
   segments?: number;
   showBarTops?: boolean;
@@ -271,7 +272,8 @@ class BarChart extends AbstractChart<BarChartProps, BarChartState> {
       withCustomBarColorFromData = false,
       showValuesOnTopOfBars = false,
       flatColor = false,
-      segments = 4
+      segments = 4,
+      scrollViewProps
     } = this.props;
 
     const { borderRadius = 0, paddingTop = 16, paddingRight = 0 } = style;
@@ -326,7 +328,7 @@ class BarChart extends AbstractChart<BarChartProps, BarChartState> {
             </G>
           </Svg>
         </View>
-        <ScrollView horizontal={true} bounces={false}>
+        <ScrollView horizontal={true} bounces={false} {...scrollViewProps}>
           <Svg height={height} width={width}>
             {this.renderDefs({
               ...config,
