@@ -265,7 +265,7 @@ class BarChart extends AbstractChart<BarChartProps, BarChartState> {
       withInnerLines = true,
       showBarTops = true,
       decorator,
-      onDataPointClick,
+      onBarPress,
       withCustomBarColorFromData = false,
       showValuesOnTopOfBars = false,
       flatColor = false,
@@ -352,7 +352,8 @@ class BarChart extends AbstractChart<BarChartProps, BarChartState> {
               data: data.datasets[0].data,
               paddingTop: paddingTop as number,
               paddingRight: paddingRight as number,
-              withCustomBarColorFromData: withCustomBarColorFromData
+              withCustomBarColorFromData: withCustomBarColorFromData,
+              onBarPress: onBarPress
             })}
           </G>
           <G>
