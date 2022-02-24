@@ -1,4 +1,4 @@
-import React from "react";
+import React, { RefObject } from "react";
 import { ScrollView, ScrollViewProps, View, ViewStyle } from "react-native";
 import {
   Defs,
@@ -64,9 +64,13 @@ export interface BarChartProps extends AbstractChartProps {
   flatColor?: boolean;
 }
 
+interface BarChartRefProps extends BarChartProps {
+  scrollViewRef: RefObject<ScrollView>;
+}
+
 type BarChartState = {};
 
-class BarChart extends AbstractChart<BarChartProps, BarChartState> {
+class BarChart extends AbstractChart<BarChartRefProps, BarChartState> {
   getBarPercentage = () => {
     const { barPercentage = 1 } = this.props.chartConfig;
     return barPercentage;
@@ -273,7 +277,8 @@ class BarChart extends AbstractChart<BarChartProps, BarChartState> {
       showValuesOnTopOfBars = false,
       flatColor = false,
       segments = 4,
-      scrollViewProps
+      scrollViewProps = {},
+      scrollViewRef
     } = this.props;
 
     const { borderRadius = 0, paddingTop = 16, paddingRight = 0 } = style;
@@ -312,7 +317,11 @@ class BarChart extends AbstractChart<BarChartProps, BarChartState> {
               height={height}
               // rx={borderRadius}
               // ry={borderRadius}
-              fill="url(#backgroundGradient)"
+              fill={
+                this.props.chartConfig.backgroundColor
+                  ? this.props.chartConfig.backgroundColor
+                  : "url(#backgroundGradient)"
+              }
             />
             <G>
               {withHorizontalLabels
@@ -328,7 +337,12 @@ class BarChart extends AbstractChart<BarChartProps, BarChartState> {
             </G>
           </Svg>
         </View>
-        <ScrollView horizontal={true} bounces={false} {...scrollViewProps}>
+        <ScrollView
+          ref={scrollViewRef}
+          horizontal={true}
+          bounces={false}
+          {...scrollViewProps}
+        >
           <Svg height={height} width={width}>
             {this.renderDefs({
               ...config,
@@ -344,7 +358,11 @@ class BarChart extends AbstractChart<BarChartProps, BarChartState> {
               height={height}
               // rx={borderRadius}
               // ry={borderRadius}
-              fill="url(#backgroundGradient)"
+              fill={
+                this.props.chartConfig.backgroundColor
+                  ? this.props.chartConfig.backgroundColor
+                  : "url(#backgroundGradient)"
+              }
             />
             <G>
               {withInnerLines
@@ -411,4 +429,8 @@ class BarChart extends AbstractChart<BarChartProps, BarChartState> {
   }
 }
 
-export default BarChart;
+export default React.forwardRef(
+  (props: BarChartProps, ref: RefObject<ScrollView>) => (
+    <BarChart scrollViewRef={ref} {...props} />
+  )
+);
