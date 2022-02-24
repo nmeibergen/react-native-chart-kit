@@ -1,5 +1,5 @@
 import React from "react";
-import { View, ViewStyle } from "react-native";
+import { ScrollView, View, ViewStyle } from "react-native";
 import {
   Defs,
   G,
@@ -275,7 +275,7 @@ class BarChart extends AbstractChart<BarChartProps, BarChartState> {
     const { borderRadius = 0, paddingTop = 16, paddingRight = 64 } = style;
 
     const config = {
-      width,
+      width: width,
       height,
       verticalLabelRotation,
       horizontalLabelRotation,
@@ -296,94 +296,100 @@ class BarChart extends AbstractChart<BarChartProps, BarChartState> {
     };
 
     return (
-      <View style={style}>
-        <Svg height={height} width={width}>
-          {this.renderDefs({
-            ...config,
-            ...this.props.chartConfig
-          })}
-          {this.renderColors({
-            ...this.props.chartConfig,
-            flatColor: flatColor,
-            data: this.props.data.datasets
-          })}
-          <Rect
-            width="100%"
-            height={height}
-            rx={borderRadius}
-            ry={borderRadius}
-            fill="url(#backgroundGradient)"
-          />
-          <G>
-            {withInnerLines
-              ? this.renderHorizontalLines({
+      <View style={[style, { flexDirection: "row" }]}>
+        <View style={{ width: 100 }}>
+          <Svg height={height} width={100}>
+            <G>
+              {withHorizontalLabels
+                ? this.renderHorizontalLabels({
+                    ...config,
+                    count: segments,
+                    data: data.datasets[0].data,
+                    paddingTop: paddingTop as number,
+                    paddingRight: paddingRight as number
+                  })
+                : null}
+            </G>
+          </Svg>
+        </View>
+        <ScrollView horizontal={true}>
+          <Svg height={height} width={width}>
+            {this.renderDefs({
+              ...config,
+              ...this.props.chartConfig
+            })}
+            {this.renderColors({
+              ...this.props.chartConfig,
+              flatColor: flatColor,
+              data: this.props.data.datasets
+            })}
+            <Rect
+              width="100%"
+              height={height}
+              rx={borderRadius}
+              ry={borderRadius}
+              fill="url(#backgroundGradient)"
+            />
+            <G>
+              {withInnerLines
+                ? this.renderHorizontalLines({
+                    ...config,
+                    count: segments,
+                    paddingTop,
+                    paddingRight
+                  })
+                : null}
+            </G>
+            <G>
+              {withVerticalLabels
+                ? this.renderVerticalLabels({
+                    ...config,
+                    labels: data.labels,
+                    paddingRight: paddingRight as number,
+                    paddingTop: paddingTop as number,
+                    horizontalOffset: barWidth * this.getBarPercentage()
+                  })
+                : null}
+            </G>
+            <G>
+              {this.renderBars({
+                ...config,
+                data: data.datasets[0].data,
+                paddingTop: paddingTop as number,
+                paddingRight: paddingRight as number,
+                withCustomBarColorFromData: withCustomBarColorFromData,
+                onBarPress: onBarPress
+              })}
+            </G>
+            <G>
+              {showValuesOnTopOfBars &&
+                this.renderValuesOnTopOfBars({
                   ...config,
-                  count: segments,
-                  paddingTop,
-                  paddingRight
-                })
-              : null}
-          </G>
-          <G>
-            {withHorizontalLabels
-              ? this.renderHorizontalLabels({
-                  ...config,
-                  count: segments,
                   data: data.datasets[0].data,
                   paddingTop: paddingTop as number,
                   paddingRight: paddingRight as number
-                })
-              : null}
-          </G>
-          <G>
-            {withVerticalLabels
-              ? this.renderVerticalLabels({
+                })}
+            </G>
+            <G>
+              {showBarTops &&
+                this.renderBarTops({
                   ...config,
-                  labels: data.labels,
-                  paddingRight: paddingRight as number,
+                  data: data.datasets[0].data,
                   paddingTop: paddingTop as number,
-                  horizontalOffset: barWidth * this.getBarPercentage()
-                })
-              : null}
-          </G>
-          <G>
-            {this.renderBars({
-              ...config,
-              data: data.datasets[0].data,
-              paddingTop: paddingTop as number,
-              paddingRight: paddingRight as number,
-              withCustomBarColorFromData: withCustomBarColorFromData,
-              onBarPress: onBarPress
-            })}
-          </G>
-          <G>
-            {showValuesOnTopOfBars &&
-              this.renderValuesOnTopOfBars({
-                ...config,
-                data: data.datasets[0].data,
-                paddingTop: paddingTop as number,
-                paddingRight: paddingRight as number
-              })}
-          </G>
-          <G>
-            {showBarTops &&
-              this.renderBarTops({
-                ...config,
-                data: data.datasets[0].data,
-                paddingTop: paddingTop as number,
-                paddingRight: paddingRight as number
-              })}
-          </G>
-          <G>
-            {decorator &&
-              decorator({
-                ...config,
-                data: data.datasets[0].data,
-                paddingTop,
-                paddingRight
-              })}
-          </G>
-        </Svg>
+                  paddingRight: paddingRight as number
+                })}
+            </G>
+            <G>
+              {decorator &&
+                decorator({
+                  ...config,
+                  data: data.datasets[0].data,
+                  paddingTop,
+                  paddingRight
+                })}
+            </G>
+          </Svg>
+        </ScrollView>
       </View>
     );
   }
