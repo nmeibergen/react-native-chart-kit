@@ -54,6 +54,7 @@ export interface BarChartProps extends AbstractChartProps {
     x: number;
     y: number;
   }) => void;
+  yLabelsWidth?: number;
 
   segments?: number;
   showBarTops?: boolean;
@@ -257,6 +258,7 @@ class BarChart extends AbstractChart<BarChartProps, BarChartState> {
       width,
       height,
       data,
+      yLabelsWidth = 64,
       style = {},
       withHorizontalLabels = true,
       withVerticalLabels = true,
@@ -272,7 +274,7 @@ class BarChart extends AbstractChart<BarChartProps, BarChartState> {
       segments = 4
     } = this.props;
 
-    const { borderRadius = 0, paddingTop = 16, paddingRight = 64 } = style;
+    const { borderRadius = 0, paddingTop = 16, paddingRight = 0 } = style;
 
     const config = {
       width: width,
@@ -297,8 +299,8 @@ class BarChart extends AbstractChart<BarChartProps, BarChartState> {
 
     return (
       <View style={[style, { flexDirection: "row" }]}>
-        <View style={{ width: 100 }}>
-          <Svg height={height} width={100}>
+        <View>
+          <Svg height={height} width={yLabelsWidth}>
             {this.renderDefs({
               ...config,
               ...this.props.chartConfig
@@ -316,14 +318,15 @@ class BarChart extends AbstractChart<BarChartProps, BarChartState> {
                     ...config,
                     count: segments,
                     data: data.datasets[0].data,
+                    width: yLabelsWidth,
                     paddingTop: paddingTop as number,
-                    paddingRight: paddingRight as number
+                    paddingRight: yLabelsWidth as number
                   })
                 : null}
             </G>
           </Svg>
         </View>
-        <ScrollView horizontal={true}>
+        <ScrollView horizontal={true} bounces={false}>
           <Svg height={height} width={width}>
             {this.renderDefs({
               ...config,
