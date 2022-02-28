@@ -1,5 +1,7 @@
 import React, { RefObject } from "react";
 import { ScrollView, ScrollViewProps, View, ViewStyle } from "react-native";
+import Animated, { AnimateProps } from "react-native-reanimated";
+
 import {
   Defs,
   G,
@@ -55,7 +57,7 @@ export interface BarChartProps extends AbstractChartProps {
     y: number;
   }) => void;
   yLabelsWidth?: number;
-  scrollViewProps?: ScrollViewProps;
+  scrollViewProps?: AnimateProps<ScrollViewProps>;
 
   segments?: number;
   showBarTops?: boolean;
@@ -65,7 +67,7 @@ export interface BarChartProps extends AbstractChartProps {
 }
 
 interface BarChartRefProps extends BarChartProps {
-  scrollViewRef: RefObject<ScrollView>;
+  scrollViewRef: RefObject<Animated.ScrollView>;
 }
 
 type BarChartState = {};
@@ -337,7 +339,7 @@ class BarChart extends AbstractChart<BarChartRefProps, BarChartState> {
             </G>
           </Svg>
         </View>
-        <ScrollView
+        <Animated.ScrollView
           ref={scrollViewRef}
           horizontal={true}
           bounces={false}
@@ -423,14 +425,14 @@ class BarChart extends AbstractChart<BarChartRefProps, BarChartState> {
                 })}
             </G>
           </Svg>
-        </ScrollView>
+        </Animated.ScrollView>
       </View>
     );
   }
 }
 
 export default React.forwardRef(
-  (props: BarChartProps, ref: RefObject<ScrollView>) => (
+  (props: BarChartProps, ref: RefObject<Animated.ScrollView>) => (
     <BarChart scrollViewRef={ref} {...props} />
   )
 );
