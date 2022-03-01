@@ -1,5 +1,5 @@
 import React, { RefObject } from "react";
-import { ScrollView, ScrollViewProps, View, ViewStyle } from "react-native";
+import { ScrollViewProps, View, ViewStyle } from "react-native";
 import Animated, { AnimateProps } from "react-native-reanimated";
 
 import {

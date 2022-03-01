@@ -1,6 +1,7 @@
-import React from "react";
-import { View, ViewStyle } from "react-native";
+import React, { RefObject } from "react";
+import { ScrollViewProps, View, ViewStyle } from "react-native";
 import { G, Rect, Svg, Text } from "react-native-svg";
+import Animated, { AnimateProps } from "react-native-reanimated";
 
 import AbstractChart, {
   AbstractChartConfig,
@@ -30,6 +31,7 @@ export interface StackedBarChartProps extends AbstractChartProps {
   data: StackedBarChartData;
   width: number;
   height: number;
+  yLabelsWidth: number;
   chartConfig: AbstractChartConfig;
   hideLegend: boolean;
   style?: Partial<ViewStyle>;
@@ -49,7 +51,7 @@ export interface StackedBarChartProps extends AbstractChartProps {
   segments?: number;
 
   percentile?: boolean;
-
+  scrollViewProps?: AnimateProps<ScrollViewProps>;
   /**
    * Percentage of the chart height, dedicated to vertical labels
    * (space below chart)
@@ -59,10 +61,14 @@ export interface StackedBarChartProps extends AbstractChartProps {
   formatYLabel?: (yLabel: string) => string;
 }
 
+interface BarChartRefProps extends StackedBarChartProps {
+  scrollViewRef: RefObject<Animated.ScrollView>;
+}
+
 type StackedBarChartState = {};
 
 class StackedBarChart extends AbstractChart<
-  StackedBarChartProps,
+  BarChartRefProps,
   StackedBarChartState
 > {
   getBarPercentage = () => {
@@ -195,6 +201,7 @@ class StackedBarChart extends AbstractChart<
       height,
       style = {},
       data,
+      yLabelsWidth = 64,
       withHorizontalLabels = true,
       withVerticalLabels = true,
       segments = 4,
@@ -204,6 +211,8 @@ class StackedBarChart extends AbstractChart<
       formatYLabel = (yLabel: string) => {
         return yLabel;
       },
+      scrollViewProps = {},
+      scrollViewRef,
       hideLegend = false
     } = this.props;
 
@@ -233,76 +242,110 @@ class StackedBarChart extends AbstractChart<
     const stackedBar = showLegend;
 
     return (
-      <View style={style}>
-        <Svg height={height} width={width}>
-          {this.renderDefs({
-            ...config,
-            ...this.props.chartConfig
-          })}
-          <Rect
-            width="100%"
-            height={height}
-            rx={borderRadius}
-            ry={borderRadius}
-            fill="url(#backgroundGradient)"
-          />
-          <G>
-            {this.renderHorizontalLines({
+      <View style={[style, { flexDirection: "row" }]}>
+        <View>
+          <Svg height={height} width={yLabelsWidth}>
+            {this.renderDefs({
               ...config,
-              count: segments,
-              paddingTop,
-              verticalLabelsHeightPercentage
+              ...this.props.chartConfig
             })}
-          </G>
-          <G>
-            {withHorizontalLabels
-              ? this.renderHorizontalLabels({
-                  ...config,
-                  count: segments,
-                  data: [0, border],
-                  paddingTop,
-                  paddingRight,
-                  decimalPlaces,
-                  verticalLabelsHeightPercentage,
-                  formatYLabel
-                })
-              : null}
-          </G>
-          <G>
-            {withVerticalLabels
-              ? this.renderVerticalLabels({
-                  ...config,
-                  labels: data.labels,
-                  paddingRight: paddingRight + 28,
-                  stackedBar,
-                  paddingTop,
-                  horizontalOffset: barWidth,
-                  verticalLabelsHeightPercentage
-                })
-              : null}
-          </G>
-          <G>
-            {this.renderBars({
+            <Rect
+              width="100%"
+              height={height}
+              // rx={borderRadius}
+              // ry={borderRadius}
+              fill={
+                this.props.chartConfig.backgroundColor
+                  ? this.props.chartConfig.backgroundColor
+                  : "url(#backgroundGradient)"
+              }
+            />
+            <G>
+              {withHorizontalLabels
+                ? this.renderHorizontalLabels({
+                    ...config,
+                    count: segments,
+                    data: [0, border],
+                    paddingTop,
+                    paddingRight,
+                    decimalPlaces,
+                    verticalLabelsHeightPercentage,
+                    formatYLabel
+                  })
+                : null}
+            </G>
+          </Svg>
+        </View>
+        <Animated.ScrollView
+          ref={scrollViewRef}
+          horizontal={true}
+          bounces={false}
+          {...scrollViewProps}
+        >
+          <Svg height={height} width={width}>
+            {this.renderDefs({
               ...config,
-              data: data.data,
-              border,
-              colors: this.props.data.barColors,
-              paddingTop,
-              paddingRight: paddingRight + 20,
-              stackedBar,
-              verticalLabelsHeightPercentage
+              ...this.props.chartConfig
             })}
-          </G>
-          {showLegend &&
-            this.renderLegend({
-              ...config,
-              legend: data.legend,
-              colors: this.props.data.barColors
-            })}
-        </Svg>
+            <Rect
+              width="100%"
+              height={height}
+              // rx={borderRadius}
+              // ry={borderRadius}
+              fill={
+                this.props.chartConfig.backgroundColor
+                  ? this.props.chartConfig.backgroundColor
+                  : "url(#backgroundGradient)"
+              }
+            />
+            <G>
+              {this.renderHorizontalLines({
+                ...config,
+                count: segments,
+                paddingTop,
+                verticalLabelsHeightPercentage
+              })}
+            </G>
+            <G>
+              {withVerticalLabels
+                ? this.renderVerticalLabels({
+                    ...config,
+                    labels: data.labels,
+                    paddingRight: paddingRight + 28,
+                    stackedBar,
+                    paddingTop,
+                    horizontalOffset: barWidth,
+                    verticalLabelsHeightPercentage
+                  })
+                : null}
+            </G>
+            <G>
+              {this.renderBars({
+                ...config,
+                data: data.data,
+                border,
+                colors: this.props.data.barColors,
+                paddingTop,
+                paddingRight: paddingRight + 20,
+                stackedBar,
+                verticalLabelsHeightPercentage
+              })}
+            </G>
+            {showLegend &&
+              this.renderLegend({
+                ...config,
+                legend: data.legend,
+                colors: this.props.data.barColors
+              })}
+          </Svg>
+        </Animated.ScrollView>
       </View>
     );
   }
 }
 
-export default StackedBarChart;
+export default React.forwardRef(
+  (props: StackedBarChartProps, ref: RefObject<Animated.ScrollView>) => (
+    <StackedBarChart scrollViewRef={ref} {...props} />
+  )
+);
