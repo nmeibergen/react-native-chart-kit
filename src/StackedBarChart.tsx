@@ -193,7 +193,6 @@ class StackedBarChart extends AbstractChart<
 
   render() {
     const paddingTop = 15;
-    const paddingRight = 50;
     const barWidth = 32 * this.getBarPercentage();
 
     const {
@@ -216,7 +215,7 @@ class StackedBarChart extends AbstractChart<
       hideLegend = false
     } = this.props;
 
-    const { borderRadius = 0 } = style;
+    const { borderRadius = 0, paddingRight = 0 } = style;
     const config = {
       width,
       height
@@ -267,7 +266,7 @@ class StackedBarChart extends AbstractChart<
                     count: segments,
                     data: [0, border],
                     paddingTop,
-                    paddingRight,
+                    paddingRight: yLabelsWidth as number,
                     decimalPlaces,
                     verticalLabelsHeightPercentage,
                     formatYLabel
@@ -311,7 +310,7 @@ class StackedBarChart extends AbstractChart<
                 ? this.renderVerticalLabels({
                     ...config,
                     labels: data.labels,
-                    paddingRight: paddingRight + 28,
+                    paddingRight: paddingRight as number,
                     stackedBar,
                     paddingTop,
                     horizontalOffset: barWidth,
@@ -326,7 +325,7 @@ class StackedBarChart extends AbstractChart<
                 border,
                 colors: this.props.data.barColors,
                 paddingTop,
-                paddingRight: paddingRight + 20,
+                paddingRight: paddingRight as number,
                 stackedBar,
                 verticalLabelsHeightPercentage
               })}
