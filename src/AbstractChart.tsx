@@ -31,6 +31,7 @@ export interface AbstractChartConfig extends ChartConfig {
   verticalLabelRotation?: number;
   formatXLabel?: (xLabel: string) => string;
   verticalLabelsHeightPercentage?: number;
+  switchYLabelHeight?: number;
   formatTopBarValue?: (topBarValue: number) => string | number;
 }
 
@@ -44,7 +45,9 @@ class AbstractChart<
 > extends Component<AbstractChartProps & IProps, AbstractChartState & IState> {
   calcScaler = (data: number[]) => {
     if (this.props.fromZero && this.props.fromNumber) {
-      return Math.max(...data, this.props.fromNumber) - Math.min(...data, 0) || 1;
+      return (
+        Math.max(...data, this.props.fromNumber) - Math.min(...data, 0) || 1
+      );
     } else if (this.props.fromZero) {
       return Math.max(...data, 0) - Math.min(...data, 0) || 1;
     } else if (this.props.fromNumber) {
@@ -250,6 +253,7 @@ class AbstractChart<
     stackedBar = false,
     verticalLabelRotation = 0,
     formatXLabel = xLabel => xLabel,
+    switchYLabelHeight = 0,
     verticalLabelsHeightPercentage = DEFAULT_X_LABELS_HEIGHT_PERCENTAGE
   }: Pick<
     AbstractChartConfig,
@@ -262,6 +266,7 @@ class AbstractChart<
     | "stackedBar"
     | "verticalLabelRotation"
     | "formatXLabel"
+    | "switchYLabelHeight"
     | "verticalLabelsHeightPercentage"
   >) => {
     const {
@@ -277,6 +282,8 @@ class AbstractChart<
       fac = 0.71;
     }
 
+    console.log({ switchYLabelHeight });
+
     return labels.map((label, i) => {
       if (hidePointsAtIndex.includes(i)) {
         return null;
@@ -291,22 +298,33 @@ class AbstractChart<
       const y =
         height * verticalLabelsHeightPercentage +
         paddingTop +
-        fontSize * 2 +
+        (fontSize * 3) / 2 +
         xLabelsOffset;
 
       return (
-        <Text
-          origin={`${x}, ${y}`}
-          rotation={verticalLabelRotation}
-          key={Math.random()}
-          x={x}
-          y={y}
-          textAnchor={verticalLabelRotation === 0 ? "middle" : "start"}
-          {...this.getPropsForLabels()}
-          {...this.getPropsForVerticalLabels()}
-        >
-          {`${formatXLabel(label)}${xAxisLabel}`}
-        </Text>
+        <>
+          {i % 2 === 1 && switchYLabelHeight >= 10 ? (
+            <Line
+              x1={x}
+              x2={x}
+              y1={y - (3 / 2) * fontSize}
+              y2={y - (3 / 2) * fontSize + switchYLabelHeight}
+              stroke={this.getPropsForBackgroundLines().stroke}
+            />
+          ) : null}
+          <Text
+            origin={`${x}, ${y}`}
+            rotation={verticalLabelRotation}
+            key={Math.random()}
+            x={x}
+            y={y + (i % 2 === 1 ? switchYLabelHeight : 0)}
+            textAnchor={verticalLabelRotation === 0 ? "middle" : "start"}
+            {...this.getPropsForLabels()}
+            {...this.getPropsForVerticalLabels()}
+          >
+            {`${formatXLabel(label)}${xAxisLabel}`}
+          </Text>
+        </>
       );
     });
   };

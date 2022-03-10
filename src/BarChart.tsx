@@ -290,6 +290,7 @@ class BarChart extends AbstractChart<BarChartRefProps, BarChartState> {
       height,
       verticalLabelRotation,
       horizontalLabelRotation,
+      switchYLabelHeight: this.props.chartConfig.switchYLabelHeight,
       barRadius:
         (this.props.chartConfig && this.props.chartConfig.barRadius) || 0,
       decimalPlaces:

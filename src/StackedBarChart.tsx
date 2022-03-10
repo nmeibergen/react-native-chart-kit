@@ -59,6 +59,10 @@ export interface StackedBarChartProps extends AbstractChartProps {
   verticalLabelsHeightPercentage?: number;
 
   formatYLabel?: (yLabel: string) => string;
+
+  /** Callback that is called when a data point is clicked.
+   */
+  onBarPress?: (data: { index: number; value: number[] }) => void;
 }
 
 interface BarChartRefProps extends StackedBarChartProps {
@@ -91,7 +95,8 @@ class StackedBarChart extends AbstractChart<
     border,
     colors,
     stackedBar = false,
-    verticalLabelsHeightPercentage
+    verticalLabelsHeightPercentage,
+    onBarPress
   }: Pick<
     Omit<AbstractChartConfig, "data">,
     | "width"
@@ -104,12 +109,24 @@ class StackedBarChart extends AbstractChart<
     border: number;
     colors: string[];
     data: number[][];
+    onBarPress: StackedBarChartProps["onBarPress"];
   }) =>
     data.map((x, i) => {
       const barWidth = 32 * this.getBarPercentage();
       const ret = [];
       let h = 0;
       let st = paddingTop;
+
+      const onPress = () => {
+        if (!onBarPress) {
+          return;
+        }
+
+        onBarPress({
+          index: i,
+          value: x
+        });
+      };
 
       let fac = 1;
       if (stackedBar) {
@@ -135,6 +152,7 @@ class StackedBarChart extends AbstractChart<
             ry={this.getBarRadius(ret, x)}
             width={barWidth}
             height={h}
+            onPress={onPress}
             fill={colors[z]}
           />
         );
@@ -210,6 +228,7 @@ class StackedBarChart extends AbstractChart<
       formatYLabel = (yLabel: string) => {
         return yLabel;
       },
+      onBarPress,
       scrollViewProps = {},
       scrollViewRef,
       hideLegend = false
@@ -327,7 +346,8 @@ class StackedBarChart extends AbstractChart<
                 paddingTop,
                 paddingRight: paddingRight as number,
                 stackedBar,
-                verticalLabelsHeightPercentage
+                verticalLabelsHeightPercentage,
+                onBarPress: onBarPress
               })}
             </G>
             {showLegend &&
