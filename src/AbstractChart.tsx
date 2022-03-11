@@ -142,12 +142,13 @@ class AbstractChart<
       width,
       height,
       paddingTop,
-      paddingRight,
+      // paddingRight,
       verticalLabelsHeightPercentage = DEFAULT_X_LABELS_HEIGHT_PERCENTAGE
     } = config;
     const basePosition = height * verticalLabelsHeightPercentage;
 
     return [...new Array(count + 1)].map((_, i) => {
+      const paddingRight = 0;
       const y = (basePosition / count) * i + paddingTop;
       return (
         <Line
@@ -167,9 +168,13 @@ class AbstractChart<
       width,
       height,
       paddingTop,
-      paddingRight,
+      // paddingRight,
       verticalLabelsHeightPercentage = DEFAULT_X_LABELS_HEIGHT_PERCENTAGE
     } = config;
+
+    // PaddingRight should only happen for the labels and chart, not the lines inside the chart.
+    const paddingRight = 0;
+
     return (
       <Line
         key={Math.random()}
@@ -282,12 +287,12 @@ class AbstractChart<
       fac = 0.71;
     }
 
-    console.log({ switchYLabelHeight });
-
     return labels.map((label, i) => {
       if (hidePointsAtIndex.includes(i)) {
         return null;
       }
+
+      const graphBottom = height * verticalLabelsHeightPercentage + paddingTop;
 
       const x =
         (((width - paddingRight) / labels.length) * i +
@@ -295,20 +300,16 @@ class AbstractChart<
           horizontalOffset) *
         fac;
 
-      const y =
-        height * verticalLabelsHeightPercentage +
-        paddingTop +
-        (fontSize * 3) / 2 +
-        xLabelsOffset;
+      const y = graphBottom + (fontSize * 3) / 2 + xLabelsOffset;
 
       return (
         <>
-          {i % 2 === 1 && switchYLabelHeight >= 10 ? (
+          {i % 2 === 1 && switchYLabelHeight >= fontSize ? (
             <Line
               x1={x}
               x2={x}
-              y1={y - (3 / 2) * fontSize}
-              y2={y - (3 / 2) * fontSize + switchYLabelHeight}
+              y1={graphBottom}
+              y2={y + Math.max(0, switchYLabelHeight - fontSize)}
               stroke={this.getPropsForBackgroundLines().stroke}
             />
           ) : null}
@@ -318,7 +319,13 @@ class AbstractChart<
             key={Math.random()}
             x={x}
             y={y + (i % 2 === 1 ? switchYLabelHeight : 0)}
-            textAnchor={verticalLabelRotation === 0 ? "middle" : "start"}
+            textAnchor={
+              verticalLabelRotation === 0
+                ? "middle"
+                : verticalLabelRotation < 0
+                ? "end"
+                : "start"
+            }
             {...this.getPropsForLabels()}
             {...this.getPropsForVerticalLabels()}
           >
@@ -349,6 +356,9 @@ class AbstractChart<
     "data"
   > & { data: number[] }) => {
     const { yAxisInterval = 1 } = this.props;
+
+    // PaddingRight should only happen for the labels and chart, not the lines inside the chart.
+    paddingRight = 0;
 
     return [...new Array(Math.ceil(data.length / yAxisInterval))].map(
       (_, i) => {

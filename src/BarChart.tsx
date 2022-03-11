@@ -14,7 +14,8 @@ import {
 
 import AbstractChart, {
   AbstractChartConfig,
-  AbstractChartProps
+  AbstractChartProps,
+  DEFAULT_X_LABELS_HEIGHT_PERCENTAGE
 } from "./AbstractChart";
 import { ChartData } from "./HelperTypes";
 
@@ -86,10 +87,16 @@ class BarChart extends AbstractChart<BarChartRefProps, BarChartState> {
     paddingRight,
     barRadius,
     withCustomBarColorFromData,
-    onBarPress
+    onBarPress,
+    verticalLabelsHeightPercentage
   }: Pick<
     Omit<AbstractChartConfig, "data">,
-    "width" | "height" | "paddingRight" | "paddingTop" | "barRadius"
+    | "width"
+    | "height"
+    | "paddingRight"
+    | "paddingTop"
+    | "barRadius"
+    | "verticalLabelsHeightPercentage"
   > & {
     data: number[];
     withCustomBarColorFromData: boolean;
@@ -106,7 +113,9 @@ class BarChart extends AbstractChart<BarChartRefProps, BarChartState> {
         (i * (width - paddingRight)) / data.length +
         barWidth / 2;
       const cy =
-        ((barHeight > 0 ? baseHeight - barHeight : baseHeight) / 4) * 3 +
+        (barHeight > 0 ? baseHeight - barHeight : baseHeight) *
+          (verticalLabelsHeightPercentage ||
+            DEFAULT_X_LABELS_HEIGHT_PERCENTAGE) +
         paddingTop;
 
       const onPress = () => {
@@ -132,12 +141,18 @@ class BarChart extends AbstractChart<BarChartRefProps, BarChartState> {
             barWidth / 2
           }
           y={
-            ((barHeight > 0 ? baseHeight - barHeight : baseHeight) / 4) * 3 +
+            (barHeight > 0 ? baseHeight - barHeight : baseHeight) *
+              (verticalLabelsHeightPercentage ||
+                DEFAULT_X_LABELS_HEIGHT_PERCENTAGE) +
             paddingTop
           }
           rx={barRadius}
           width={barWidth}
-          height={(Math.abs(barHeight) / 4) * 3}
+          height={
+            Math.abs(barHeight) *
+            (verticalLabelsHeightPercentage ||
+              DEFAULT_X_LABELS_HEIGHT_PERCENTAGE)
+          }
           onPress={onPress}
           fill={
             withCustomBarColorFromData
@@ -154,10 +169,15 @@ class BarChart extends AbstractChart<BarChartRefProps, BarChartState> {
     width,
     height,
     paddingTop,
-    paddingRight
+    paddingRight,
+    verticalLabelsHeightPercentage
   }: Pick<
     Omit<AbstractChartConfig, "data">,
-    "width" | "height" | "paddingRight" | "paddingTop"
+    | "width"
+    | "height"
+    | "paddingRight"
+    | "paddingTop"
+    | "verticalLabelsHeightPercentage"
   > & {
     data: number[];
   }) => {
@@ -174,7 +194,12 @@ class BarChart extends AbstractChart<BarChartRefProps, BarChartState> {
             (i * (width - paddingRight)) / data.length +
             barWidth / 2
           }
-          y={((baseHeight - barHeight) / 4) * 3 + paddingTop}
+          y={
+            (baseHeight - barHeight) *
+              (verticalLabelsHeightPercentage ||
+                DEFAULT_X_LABELS_HEIGHT_PERCENTAGE) +
+            paddingTop
+          }
           width={barWidth}
           height={2}
           fill={this.props.chartConfig.color(0.6)}
@@ -222,10 +247,15 @@ class BarChart extends AbstractChart<BarChartRefProps, BarChartState> {
     width,
     height,
     paddingTop,
-    paddingRight
+    paddingRight,
+    verticalLabelsHeightPercentage
   }: Pick<
     Omit<AbstractChartConfig, "data">,
-    "width" | "height" | "paddingRight" | "paddingTop"
+    | "width"
+    | "height"
+    | "paddingRight"
+    | "paddingTop"
+    | "verticalLabelsHeightPercentage"
   > & {
     data: number[];
   }) => {
@@ -249,7 +279,13 @@ class BarChart extends AbstractChart<BarChartRefProps, BarChartState> {
             (i * (width - paddingRight)) / data.length +
             barWidth / 1
           }
-          y={((baseHeight - barHeight) / 4) * 3 + paddingTop - 1}
+          y={
+            (baseHeight - barHeight) *
+              (verticalLabelsHeightPercentage ||
+                DEFAULT_X_LABELS_HEIGHT_PERCENTAGE) +
+            paddingTop -
+            2
+          }
           fill={this.props.chartConfig.color(0.6)}
           fontSize="12"
           textAnchor="middle"
@@ -291,6 +327,8 @@ class BarChart extends AbstractChart<BarChartRefProps, BarChartState> {
       verticalLabelRotation,
       horizontalLabelRotation,
       switchYLabelHeight: this.props.chartConfig.switchYLabelHeight,
+      verticalLabelsHeightPercentage:
+        this.props.chartConfig.verticalLabelsHeightPercentage || undefined,
       barRadius:
         (this.props.chartConfig && this.props.chartConfig.barRadius) || 0,
       decimalPlaces:
