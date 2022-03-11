@@ -419,6 +419,7 @@ class BarChart extends AbstractChart<BarChartRefProps, BarChartState> {
               {withVerticalLabels
                 ? this.renderVerticalLabels({
                     ...config,
+                    onPress: onBarPress,
                     labels: data.labels,
                     paddingRight: paddingRight as number,
                     paddingTop: paddingTop as number,

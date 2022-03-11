@@ -33,6 +33,7 @@ export interface AbstractChartConfig extends ChartConfig {
   verticalLabelsHeightPercentage?: number;
   switchYLabelHeight?: number;
   formatTopBarValue?: (topBarValue: number) => string | number;
+  onPress?: (data: any) => void;
 }
 
 export type AbstractChartState = {};
@@ -259,7 +260,8 @@ class AbstractChart<
     verticalLabelRotation = 0,
     formatXLabel = xLabel => xLabel,
     switchYLabelHeight = 0,
-    verticalLabelsHeightPercentage = DEFAULT_X_LABELS_HEIGHT_PERCENTAGE
+    verticalLabelsHeightPercentage = DEFAULT_X_LABELS_HEIGHT_PERCENTAGE,
+    onPress = () => {}
   }: Pick<
     AbstractChartConfig,
     | "labels"
@@ -273,6 +275,7 @@ class AbstractChart<
     | "formatXLabel"
     | "switchYLabelHeight"
     | "verticalLabelsHeightPercentage"
+    | "onPress"
   >) => {
     const {
       xAxisLabel = "",
@@ -314,6 +317,7 @@ class AbstractChart<
             />
           ) : null}
           <Text
+            onPress={() => onPress({ index: i })}
             origin={`${x}, ${y}`}
             rotation={verticalLabelRotation}
             key={Math.random()}
