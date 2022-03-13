@@ -1,5 +1,6 @@
 import AbstractChart from "./AbstractChart";
 import BarChart from "./BarChart";
+import HorizontalBarChart from "./HorizontalBarChart";
 import PieChart from "./PieChart";
 import ProgressChart from "./ProgressChart";
 import StackedBarChart from "./StackedBarChart";
@@ -9,6 +10,7 @@ import LineChart from "./line-chart";
 export {
   AbstractChart,
   BarChart,
+  HorizontalBarChart,
   LineChart,
   PieChart,
   ProgressChart,
