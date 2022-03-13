@@ -1,4 +1,4 @@
-import AbstractChart from "./AbstractChart";
+import { BaseChart as AbstractChart } from "./AbstractChart";
 import BarChart from "./BarChart";
 import HorizontalBarChart from "./HorizontalBarChart";
 import PieChart from "./PieChart";

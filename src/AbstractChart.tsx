@@ -39,6 +39,7 @@ export interface AbstractChartConfig extends ChartConfig {
 export type AbstractChartState = {};
 
 export const DEFAULT_X_LABELS_HEIGHT_PERCENTAGE = 0.75;
+export const DEFAULT_Y_LABELS_WIDTH_PERCENTAGE = 0.2;
 
 class AbstractChart<
   IProps extends AbstractChartProps,
@@ -137,6 +138,182 @@ class AbstractChart<
     };
   }
 
+  renderDefs = (
+    config: Pick<
+      PartialBy<
+        AbstractChartConfig,
+        | "backgroundGradientFromOpacity"
+        | "backgroundGradientToOpacity"
+        | "fillShadowGradient"
+        | "fillShadowGradientOpacity"
+        | "fillShadowGradientFrom"
+        | "fillShadowGradientFromOpacity"
+        | "fillShadowGradientFromOffset"
+        | "fillShadowGradientTo"
+        | "fillShadowGradientToOpacity"
+        | "fillShadowGradientToOffset"
+      >,
+      | "width"
+      | "height"
+      | "backgroundGradientFrom"
+      | "backgroundGradientTo"
+      | "useShadowColorFromDataset"
+      | "data"
+      | "backgroundGradientFromOpacity"
+      | "backgroundGradientToOpacity"
+      | "fillShadowGradient"
+      | "fillShadowGradientOpacity"
+      | "fillShadowGradientFrom"
+      | "fillShadowGradientFromOpacity"
+      | "fillShadowGradientFromOffset"
+      | "fillShadowGradientTo"
+      | "fillShadowGradientToOpacity"
+      | "fillShadowGradientToOffset"
+    >
+  ) => {
+    const {
+      width,
+      height,
+      backgroundGradientFrom,
+      backgroundGradientTo,
+      useShadowColorFromDataset,
+      data
+    } = config;
+
+    const fromOpacity = config.hasOwnProperty("backgroundGradientFromOpacity")
+      ? config.backgroundGradientFromOpacity
+      : 1.0;
+    const toOpacity = config.hasOwnProperty("backgroundGradientToOpacity")
+      ? config.backgroundGradientToOpacity
+      : 1.0;
+
+    const fillShadowGradient = config.hasOwnProperty("fillShadowGradient")
+      ? config.fillShadowGradient
+      : this.props.chartConfig.color(1.0);
+
+    const fillShadowGradientOpacity = config.hasOwnProperty(
+      "fillShadowGradientOpacity"
+    )
+      ? config.fillShadowGradientOpacity
+      : 0.1;
+
+    const fillShadowGradientFrom = config.hasOwnProperty(
+      "fillShadowGradientFrom"
+    )
+      ? config.fillShadowGradientFrom
+      : fillShadowGradient;
+
+    const fillShadowGradientFromOpacity = config.hasOwnProperty(
+      "fillShadowGradientFromOpacity"
+    )
+      ? config.fillShadowGradientFromOpacity
+      : fillShadowGradientOpacity;
+
+    const fillShadowGradientFromOffset = config.hasOwnProperty(
+      "fillShadowGradientFromOffset"
+    )
+      ? config.fillShadowGradientFromOffset
+      : 0;
+
+    const fillShadowGradientTo = config.hasOwnProperty("fillShadowGradientTo")
+      ? config.fillShadowGradientTo
+      : this.props.chartConfig.color(1.0);
+
+    const fillShadowGradientToOpacity = config.hasOwnProperty(
+      "fillShadowGradientToOpacity"
+    )
+      ? config.fillShadowGradientToOpacity
+      : 0.1;
+
+    const fillShadowGradientToOffset = config.hasOwnProperty(
+      "fillShadowGradientToOffset"
+    )
+      ? config.fillShadowGradientToOffset
+      : 1;
+
+    return (
+      <Defs>
+        <LinearGradient
+          id="backgroundGradient"
+          x1={0}
+          y1={height}
+          x2={width}
+          y2={0}
+          gradientUnits="userSpaceOnUse"
+        >
+          <Stop
+            offset="0"
+            stopColor={backgroundGradientFrom}
+            stopOpacity={fromOpacity}
+          />
+          <Stop
+            offset="1"
+            stopColor={backgroundGradientTo}
+            stopOpacity={toOpacity}
+          />
+        </LinearGradient>
+        {useShadowColorFromDataset ? (
+          data.map((dataset, index) => (
+            <LinearGradient
+              id={`fillShadowGradientFrom_${index}`}
+              key={`${index}`}
+              x1={0}
+              y1={0}
+              x2={0}
+              y2={height}
+              gradientUnits="userSpaceOnUse"
+            >
+              <Stop
+                offset={fillShadowGradientFromOffset}
+                stopColor={
+                  dataset.color ? dataset.color(1.0) : fillShadowGradientFrom
+                }
+                stopOpacity={fillShadowGradientFromOpacity}
+              />
+              <Stop
+                offset={fillShadowGradientToOffset}
+                stopColor={
+                  dataset.color
+                    ? dataset.color(fillShadowGradientFromOpacity)
+                    : fillShadowGradientFrom
+                }
+                stopOpacity={fillShadowGradientToOpacity || 0}
+              />
+            </LinearGradient>
+          ))
+        ) : (
+          <LinearGradient
+            id="fillShadowGradientFrom"
+            x1={0}
+            y1={0}
+            x2={0}
+            y2={height}
+            gradientUnits="userSpaceOnUse"
+          >
+            <Stop
+              offset={fillShadowGradientFromOffset}
+              stopColor={fillShadowGradientFrom}
+              stopOpacity={fillShadowGradientFromOpacity}
+            />
+            <Stop
+              offset={fillShadowGradientToOffset}
+              stopColor={fillShadowGradientTo || fillShadowGradientFrom}
+              stopOpacity={fillShadowGradientToOpacity || 0}
+            />
+          </LinearGradient>
+        )}
+      </Defs>
+    );
+  };
+}
+
+export class BaseChart<
+  IProps extends AbstractChartProps,
+  IState extends AbstractChartState
+> extends AbstractChart<
+  AbstractChartProps & IProps,
+  AbstractChartState & IState
+> {
   renderHorizontalLines = config => {
     const {
       count,
@@ -404,174 +581,39 @@ class AbstractChart<
       {...this.getPropsForBackgroundLines()}
     />
   );
-
-  renderDefs = (
-    config: Pick<
-      PartialBy<
-        AbstractChartConfig,
-        | "backgroundGradientFromOpacity"
-        | "backgroundGradientToOpacity"
-        | "fillShadowGradient"
-        | "fillShadowGradientOpacity"
-        | "fillShadowGradientFrom"
-        | "fillShadowGradientFromOpacity"
-        | "fillShadowGradientFromOffset"
-        | "fillShadowGradientTo"
-        | "fillShadowGradientToOpacity"
-        | "fillShadowGradientToOffset"
-      >,
-      | "width"
-      | "height"
-      | "backgroundGradientFrom"
-      | "backgroundGradientTo"
-      | "useShadowColorFromDataset"
-      | "data"
-      | "backgroundGradientFromOpacity"
-      | "backgroundGradientToOpacity"
-      | "fillShadowGradient"
-      | "fillShadowGradientOpacity"
-      | "fillShadowGradientFrom"
-      | "fillShadowGradientFromOpacity"
-      | "fillShadowGradientFromOffset"
-      | "fillShadowGradientTo"
-      | "fillShadowGradientToOpacity"
-      | "fillShadowGradientToOffset"
-    >
-  ) => {
-    const {
-      width,
-      height,
-      backgroundGradientFrom,
-      backgroundGradientTo,
-      useShadowColorFromDataset,
-      data
-    } = config;
-
-    const fromOpacity = config.hasOwnProperty("backgroundGradientFromOpacity")
-      ? config.backgroundGradientFromOpacity
-      : 1.0;
-    const toOpacity = config.hasOwnProperty("backgroundGradientToOpacity")
-      ? config.backgroundGradientToOpacity
-      : 1.0;
-
-    const fillShadowGradient = config.hasOwnProperty("fillShadowGradient")
-      ? config.fillShadowGradient
-      : this.props.chartConfig.color(1.0);
-
-    const fillShadowGradientOpacity = config.hasOwnProperty(
-      "fillShadowGradientOpacity"
-    )
-      ? config.fillShadowGradientOpacity
-      : 0.1;
-
-    const fillShadowGradientFrom = config.hasOwnProperty(
-      "fillShadowGradientFrom"
-    )
-      ? config.fillShadowGradientFrom
-      : fillShadowGradient;
-
-    const fillShadowGradientFromOpacity = config.hasOwnProperty(
-      "fillShadowGradientFromOpacity"
-    )
-      ? config.fillShadowGradientFromOpacity
-      : fillShadowGradientOpacity;
-
-    const fillShadowGradientFromOffset = config.hasOwnProperty(
-      "fillShadowGradientFromOffset"
-    )
-      ? config.fillShadowGradientFromOffset
-      : 0;
-
-    const fillShadowGradientTo = config.hasOwnProperty("fillShadowGradientTo")
-      ? config.fillShadowGradientTo
-      : this.props.chartConfig.color(1.0);
-
-    const fillShadowGradientToOpacity = config.hasOwnProperty(
-      "fillShadowGradientToOpacity"
-    )
-      ? config.fillShadowGradientToOpacity
-      : 0.1;
-
-    const fillShadowGradientToOffset = config.hasOwnProperty(
-      "fillShadowGradientToOffset"
-    )
-      ? config.fillShadowGradientToOffset
-      : 1;
-
-    return (
-      <Defs>
-        <LinearGradient
-          id="backgroundGradient"
-          x1={0}
-          y1={height}
-          x2={width}
-          y2={0}
-          gradientUnits="userSpaceOnUse"
-        >
-          <Stop
-            offset="0"
-            stopColor={backgroundGradientFrom}
-            stopOpacity={fromOpacity}
-          />
-          <Stop
-            offset="1"
-            stopColor={backgroundGradientTo}
-            stopOpacity={toOpacity}
-          />
-        </LinearGradient>
-        {useShadowColorFromDataset ? (
-          data.map((dataset, index) => (
-            <LinearGradient
-              id={`fillShadowGradientFrom_${index}`}
-              key={`${index}`}
-              x1={0}
-              y1={0}
-              x2={0}
-              y2={height}
-              gradientUnits="userSpaceOnUse"
-            >
-              <Stop
-                offset={fillShadowGradientFromOffset}
-                stopColor={
-                  dataset.color ? dataset.color(1.0) : fillShadowGradientFrom
-                }
-                stopOpacity={fillShadowGradientFromOpacity}
-              />
-              <Stop
-                offset={fillShadowGradientToOffset}
-                stopColor={
-                  dataset.color
-                    ? dataset.color(fillShadowGradientFromOpacity)
-                    : fillShadowGradientFrom
-                }
-                stopOpacity={fillShadowGradientToOpacity || 0}
-              />
-            </LinearGradient>
-          ))
-        ) : (
-          <LinearGradient
-            id="fillShadowGradientFrom"
-            x1={0}
-            y1={0}
-            x2={0}
-            y2={height}
-            gradientUnits="userSpaceOnUse"
-          >
-            <Stop
-              offset={fillShadowGradientFromOffset}
-              stopColor={fillShadowGradientFrom}
-              stopOpacity={fillShadowGradientFromOpacity}
-            />
-            <Stop
-              offset={fillShadowGradientToOffset}
-              stopColor={fillShadowGradientTo || fillShadowGradientFrom}
-              stopOpacity={fillShadowGradientToOpacity || 0}
-            />
-          </LinearGradient>
-        )}
-      </Defs>
-    );
-  };
 }
 
-export default AbstractChart;
+export class InvertedChart<
+  IProps extends AbstractChartProps,
+  IState extends AbstractChartState
+> extends AbstractChart<
+  AbstractChartProps & IProps,
+  AbstractChartState & IState
+> {
+  renderVerticalLines = config => {
+    const {
+      count,
+      width,
+      height,
+      paddingTop,
+      // paddingRight,
+      verticalLabelsHeightPercentage = DEFAULT_X_LABELS_HEIGHT_PERCENTAGE
+    } = config;
+    const basePosition = height * verticalLabelsHeightPercentage;
+
+    return [...new Array(count + 1)].map((_, i) => {
+      const paddingRight = 0;
+      const x = (width / count) * i + paddingTop;
+      return (
+        <Line
+          key={Math.random()}
+          x1={x}
+          y1={paddingTop}
+          x2={x}
+          y2={basePosition}
+          {...this.getPropsForBackgroundLines()}
+        />
+      );
+    });
+  };
+}

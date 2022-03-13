@@ -12,7 +12,8 @@ import {
   Text
 } from "react-native-svg";
 
-import AbstractChart, {
+import {
+  InvertedChart,
   AbstractChartConfig,
   AbstractChartProps,
   DEFAULT_X_LABELS_HEIGHT_PERCENTAGE
@@ -73,7 +74,7 @@ interface BarChartRefProps extends BarChartProps {
 
 type BarChartState = {};
 
-class BarChart extends AbstractChart<BarChartRefProps, BarChartState> {
+class BarChart extends InvertedChart<BarChartRefProps, BarChartState> {
   getBarPercentage = () => {
     const { barPercentage = 1 } = this.props.chartConfig;
     return barPercentage;
@@ -407,13 +408,16 @@ class BarChart extends AbstractChart<BarChartRefProps, BarChartState> {
             />
             <G>
               {withInnerLines
-                ? this.renderHorizontalLines({
-                    ...config,
-                    count: segments,
-                    paddingTop,
-                    paddingRight
+                ? this.renderVerticalLines({
+                    ...config
                   })
-                : null}
+                : // this.renderHorizontalLines({
+                  //     ...config,
+                  //     count: segments,
+                  //     paddingTop,
+                  //     paddingRight
+                  //   })
+                  null}
             </G>
             <G>
               {withVerticalLabels

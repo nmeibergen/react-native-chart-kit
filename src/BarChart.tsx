@@ -12,7 +12,8 @@ import {
   Text
 } from "react-native-svg";
 
-import AbstractChart, {
+import {
+  BaseChart,
   AbstractChartConfig,
   AbstractChartProps,
   DEFAULT_X_LABELS_HEIGHT_PERCENTAGE
@@ -73,7 +74,7 @@ interface BarChartRefProps extends BarChartProps {
 
 type BarChartState = {};
 
-class BarChart extends AbstractChart<BarChartRefProps, BarChartState> {
+class BarChart extends BaseChart<BarChartRefProps, BarChartState> {
   getBarPercentage = () => {
     const { barPercentage = 1 } = this.props.chartConfig;
     return barPercentage;

@@ -3,7 +3,8 @@ import { ScrollViewProps, View, ViewStyle } from "react-native";
 import { G, Rect, Svg, Text } from "react-native-svg";
 import Animated, { AnimateProps } from "react-native-reanimated";
 
-import AbstractChart, {
+import {
+  BaseChart,
   AbstractChartConfig,
   AbstractChartProps,
   DEFAULT_X_LABELS_HEIGHT_PERCENTAGE
@@ -71,7 +72,7 @@ interface BarChartRefProps extends StackedBarChartProps {
 
 type StackedBarChartState = {};
 
-class StackedBarChart extends AbstractChart<
+class StackedBarChart extends BaseChart<
   BarChartRefProps,
   StackedBarChartState
 > {
