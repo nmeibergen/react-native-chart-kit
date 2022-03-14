@@ -329,12 +329,10 @@ export class BaseChart<
       verticalLabelsHeight = DEFAULT_X_LABELS_HEIGHT
     } = config;
     const basePosition = height - verticalLabelsHeight;
-    console.log({ paddingTop });
 
     return [...new Array(count + 1)].map((_, i) => {
       const paddingRight = 0;
       const y = (basePosition / count) * i + paddingTop;
-      console.log({ y });
       return (
         <Line
           key={Math.random()}
@@ -409,7 +407,6 @@ export class BaseChart<
       }
 
       const basePosition = height - verticalLabelsHeight;
-      console.log({ basePosition });
       const x = paddingRight - yLabelsOffset;
       const y =
         count === 1 && this.props.fromZero
@@ -418,6 +415,7 @@ export class BaseChart<
             verticalLabelsHeight -
             (basePosition / count) * i +
             paddingTop;
+
       return (
         <Text
           rotation={horizontalLabelRotation}
@@ -601,13 +599,13 @@ export class InvertedChart<
     const baseXPosition = horizontalLabelsWidth + paddingRight;
     const baseYPosition = height - verticalLabelsHeight;
 
-    console.log({ baseXPosition });
     return [...new Array(count + 1)].map((_, i) => {
       const paddingRight = 0;
       const x =
         baseXPosition +
         ((width - horizontalLabelsWidth) / count) * i +
         paddingRight;
+
       return (
         <Line
           key={Math.random()}
@@ -693,7 +691,7 @@ export class InvertedChart<
       count,
       data,
       width,
-      paddingRight,
+      paddingRight = 0,
       horizontalLabelRotation = 0,
       decimalPlaces = 2,
       formatYLabel = (yLabel: string) => yLabel,
@@ -705,9 +703,9 @@ export class InvertedChart<
       xAxisSuffix = "",
       xLabelsOffset = 12
     } = this.props;
+
     return new Array(count === 1 ? 1 : count + 1).fill(1).map((_, i) => {
       let xLabel = String(i * count);
-
       if (count === 1) {
         xLabel = `${xAxisLabel}${formatYLabel(
           data[0].toFixed(decimalPlaces)
@@ -722,11 +720,14 @@ export class InvertedChart<
       }
 
       const basePosition = horizontalLabelsWidth;
-      const y = paddingRight - xLabelsOffset;
+      const y = xLabelsOffset;
       const x =
         count === 1 && this.props.fromZero
           ? paddingRight + 4
-          : basePosition + (basePosition / count) * i + paddingRight;
+          : basePosition +
+            ((width - horizontalLabelsWidth) / count) * i +
+            paddingRight;
+
       return (
         <Text
           rotation={horizontalLabelRotation}

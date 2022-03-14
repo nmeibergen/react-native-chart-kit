@@ -44,11 +44,11 @@ export interface HorizontalBarChartProps extends AbstractChartProps {
    */
   withHorizontalLabels?: boolean;
   /**
-    /**
-     * This function takes a [whole bunch](https://github.com/indiespirit/react-native-chart-kit/blob/master/src/line-chart.js#L266)
-     * of stuff and can render extra elements,
-     * such as data point info or additional markup.
-     */
+      /**
+       * This function takes a [whole bunch](https://github.com/indiespirit/react-native-chart-kit/blob/master/src/line-chart.js#L266)
+       * of stuff and can render extra elements,
+       * such as data point info or additional markup.
+       */
   decorator?: Function;
   /** Callback that is called when a data point is clicked.
    */
@@ -92,7 +92,7 @@ export class HorizontalBarChart extends InvertedChart<
     barRadius,
     withCustomBarColorFromData,
     onBarPress,
-    horizontalLabelsWidth
+    horizontalLabelsWidth = DEFAULT_Y_LABELS_WIDTH
   }: Pick<
     Omit<AbstractChartConfig, "data">,
     | "width"
@@ -108,15 +108,12 @@ export class HorizontalBarChart extends InvertedChart<
   }) => {
     // Doesn't work yet for negative values in the chart...
 
+    width = width - horizontalLabelsWidth;
+
     // const baseWidth = this.calcBaseHeight(data, width);
-    const baseWidth =
-      paddingRight + (horizontalLabelsWidth || DEFAULT_Y_LABELS_WIDTH);
+    const baseWidth = horizontalLabelsWidth;
     return data.map((x, i) => {
-      const barWidth = this.calcHeight(
-        x,
-        data,
-        width - (horizontalLabelsWidth || DEFAULT_Y_LABELS_WIDTH)
-      );
+      const barWidth = this.calcHeight(x, data, width);
       const barHeight = 32 * this.getBarPercentage();
       const cy =
         paddingTop + (i * (height - paddingTop)) / data.length + barHeight / 2;
@@ -133,8 +130,11 @@ export class HorizontalBarChart extends InvertedChart<
           y: cy
         });
       };
+      console.log("BAR");
+      console.log({ x });
       console.log({ cx });
       console.log({ cy });
+      console.log({ barWidth });
       return (
         <Rect
           key={Math.random()}
@@ -273,7 +273,6 @@ export class HorizontalBarChart extends InvertedChart<
   };
   render() {
     const {
-      width,
       height,
       data,
       style = {},
@@ -292,7 +291,9 @@ export class HorizontalBarChart extends InvertedChart<
       scrollViewProps = {},
       scrollViewRef
     } = this.props;
-    const { borderRadius = 0, paddingTop = 16, paddingRight = 0 } = style;
+    const { borderRadius = 0, paddingTop = 0, paddingRight = 0 } = style;
+    const fullWidth = this.props.width || 200;
+    const width = fullWidth - 20; // this is to account for spacing on the right side
     const config = {
       width: width,
       height,
@@ -317,15 +318,21 @@ export class HorizontalBarChart extends InvertedChart<
         }
     };
 
+    const graphHeight = height - config.verticalLabelsHeight;
+    const graphContainerHeight = ((style && style.height) || 220) as number;
+
     return (
-      <View style={[style, { flexDirection: "row" }]}>
+      <View style={[style, { height: graphContainerHeight }]}>
         <Animated.ScrollView
           ref={scrollViewRef}
           horizontal={false}
           bounces={false}
+          nestedScrollEnabled={true}
+          style={{ height: graphContainerHeight - config.verticalLabelsHeight }}
+          showsVerticalScrollIndicator={false}
           {...scrollViewProps}
         >
-          <Svg height={height} width={width}>
+          <Svg height={graphHeight} width={fullWidth}>
             {this.renderDefs({
               ...config,
               ...this.props.chartConfig
@@ -338,12 +345,11 @@ export class HorizontalBarChart extends InvertedChart<
 
             <Rect
               width="100%"
-              height={height}
+              height={graphHeight}
               fill={
-                "#000"
-                // this.props.chartConfig.backgroundColor
-                //     ? this.props.chartConfig.backgroundColor
-                //     : "url(#backgroundGradient)"
+                this.props.chartConfig.backgroundColor
+                  ? this.props.chartConfig.backgroundColor
+                  : "url(#backgroundGradient)"
               }
             />
             <G>
@@ -356,29 +362,28 @@ export class HorizontalBarChart extends InvertedChart<
                   })
                 : null}
             </G>
-            {/* 
-                        <G>
-                            {withHorizontalLabels
-                                ? this.renderHorizontalLabels({
-                                    ...config,
-                                    onPress: onBarPress,
-                                    labels: data.labels,
-                                    paddingRight: paddingRight as number,
-                                    paddingTop: paddingTop as number,
-                                    // horizontalOffset: barWidth * this.getBarPercentage()
-                                })
-                                : null}
-                        </G>
-                        <G>
-                            {this.renderBars({
-                                ...config,
-                                data: data.datasets[0].data,
-                                paddingTop: paddingTop as number,
-                                paddingRight: paddingRight as number,
-                                withCustomBarColorFromData: withCustomBarColorFromData,
-                                onBarPress: onBarPress
-                            })}
-                        </G> */}
+            <G>
+              {withHorizontalLabels
+                ? this.renderHorizontalLabels({
+                    ...config,
+                    onPress: onBarPress,
+                    labels: data.labels,
+                    paddingRight: paddingRight as number,
+                    paddingTop: paddingTop as number,
+                    verticalOffset: barWidth * this.getBarPercentage()
+                  })
+                : null}
+            </G>
+            <G>
+              {this.renderBars({
+                ...config,
+                data: data.datasets[0].data,
+                paddingTop: paddingTop as number,
+                paddingRight: paddingRight as number,
+                withCustomBarColorFromData: withCustomBarColorFromData,
+                onBarPress: onBarPress
+              })}
+            </G>
             {/* <G>
                             {showValuesOnTopOfBars &&
                                 this.renderValuesOnTopOfBars({
@@ -406,46 +411,36 @@ export class HorizontalBarChart extends InvertedChart<
                                     paddingRight
                                 })}
                         </G> */}
-            <Text
-              origin={"30,30"}
-              x={30}
-              y={30}
-              textAnchor="start"
-              fill={"#ff0000"}
-            >
-              Fantastisch
-            </Text>
           </Svg>
         </Animated.ScrollView>
-        {/* <View>
-                    <Svg width={width} height={xLabelsHeight}>
-                        {this.renderDefs({
+        <View style={{ height: config.verticalLabelsHeight }}>
+          <Svg width={fullWidth} height={config.verticalLabelsHeight}>
+            {/* {this.renderDefs({
                             ...config,
                             ...this.props.chartConfig
                         })}
                         <Rect
                             width="100%"
-                            height={height}
+                            height={config.verticalLabelsHeight}
                             fill={
                                 this.props.chartConfig.backgroundColor
                                     ? this.props.chartConfig.backgroundColor
                                     : "url(#backgroundGradient)"
                             }
-                        />
-                        <G>
-                            {withVerticalLabels
-                                ? this.renderVerticalLabels({
-                                    ...config,
-                                    count: segments,
-                                    data: data.datasets[0].data,
-                                    paddingTop: paddingTop as number,
-                                    paddingRight: xLabelsHeight as number
-                                })
-                                : null
-                            }
-                        </G>
-                    </Svg>
-                </View> */}
+                        /> */}
+            <G>
+              {withVerticalLabels
+                ? this.renderVerticalLabels({
+                    ...config,
+                    count: segments,
+                    data: data.datasets[0].data,
+                    paddingTop: paddingTop as number
+                    // paddingRight: config.horizontalLabelsWidth as number
+                  })
+                : null}
+            </G>
+          </Svg>
+        </View>
       </View>
     );
   }
