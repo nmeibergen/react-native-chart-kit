@@ -7,7 +7,7 @@ import {
   BaseChart,
   AbstractChartConfig,
   AbstractChartProps,
-  DEFAULT_X_LABELS_HEIGHT_PERCENTAGE
+  DEFAULT_X_LABELS_HEIGHT
 } from "./AbstractChart";
 
 export interface StackedBarChartData {
@@ -57,7 +57,7 @@ export interface StackedBarChartProps extends AbstractChartProps {
    * Percentage of the chart height, dedicated to vertical labels
    * (space below chart)
    */
-  verticalLabelsHeightPercentage?: number;
+  verticalLabelsHeight?: number;
 
   formatYLabel?: (yLabel: string) => string;
 
@@ -96,7 +96,7 @@ class StackedBarChart extends BaseChart<
     border,
     colors,
     stackedBar = false,
-    verticalLabelsHeightPercentage,
+    verticalLabelsHeight,
     onBarPress
   }: Pick<
     Omit<AbstractChartConfig, "data">,
@@ -105,7 +105,7 @@ class StackedBarChart extends BaseChart<
     | "paddingRight"
     | "paddingTop"
     | "stackedBar"
-    | "verticalLabelsHeightPercentage"
+    | "verticalLabelsHeight"
   > & {
     border: number;
     colors: string[];
@@ -134,7 +134,7 @@ class StackedBarChart extends BaseChart<
         fac = 0.7;
       }
       const sum = this.props.percentile ? x.reduce((a, b) => a + b, 0) : border;
-      const barsAreaHeight = height * verticalLabelsHeightPercentage;
+      const barsAreaHeight = height - verticalLabelsHeight;
       for (let z = 0; z < x.length; z++) {
         h = barsAreaHeight * (x[z] / sum);
         const y = barsAreaHeight - h + st;
@@ -225,7 +225,6 @@ class StackedBarChart extends BaseChart<
       segments = 4,
       decimalPlaces,
       percentile = false,
-      verticalLabelsHeightPercentage = DEFAULT_X_LABELS_HEIGHT_PERCENTAGE,
       formatYLabel = (yLabel: string) => {
         return yLabel;
       },
@@ -238,8 +237,12 @@ class StackedBarChart extends BaseChart<
     const { borderRadius = 0, paddingRight = 0 } = style;
     const config = {
       width,
-      height
+      height,
+      verticalLabelsHeight: this.props.chartConfig.verticalLabelsHeight
     };
+
+    console.log("verticalLabelsHeight");
+    console.log(config.verticalLabelsHeight);
 
     let border = 0;
 
@@ -271,8 +274,6 @@ class StackedBarChart extends BaseChart<
             <Rect
               width="100%"
               height={height}
-              // rx={borderRadius}
-              // ry={borderRadius}
               fill={
                 this.props.chartConfig.backgroundColor
                   ? this.props.chartConfig.backgroundColor
@@ -288,7 +289,6 @@ class StackedBarChart extends BaseChart<
                     paddingTop,
                     paddingRight: yLabelsWidth as number,
                     decimalPlaces,
-                    verticalLabelsHeightPercentage,
                     formatYLabel
                   })
                 : null}
@@ -321,8 +321,7 @@ class StackedBarChart extends BaseChart<
               {this.renderHorizontalLines({
                 ...config,
                 count: segments,
-                paddingTop,
-                verticalLabelsHeightPercentage
+                paddingTop
               })}
             </G>
             <G>
@@ -333,8 +332,7 @@ class StackedBarChart extends BaseChart<
                     paddingRight: paddingRight as number,
                     stackedBar,
                     paddingTop,
-                    horizontalOffset: barWidth,
-                    verticalLabelsHeightPercentage
+                    horizontalOffset: barWidth
                   })
                 : null}
             </G>
@@ -347,7 +345,6 @@ class StackedBarChart extends BaseChart<
                 paddingTop,
                 paddingRight: paddingRight as number,
                 stackedBar,
-                verticalLabelsHeightPercentage,
                 onBarPress: onBarPress
               })}
             </G>

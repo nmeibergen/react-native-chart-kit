@@ -16,7 +16,7 @@ import {
   BaseChart,
   AbstractChartConfig,
   AbstractChartProps,
-  DEFAULT_X_LABELS_HEIGHT_PERCENTAGE
+  DEFAULT_X_LABELS_HEIGHT
 } from "./AbstractChart";
 import { ChartData } from "./HelperTypes";
 
@@ -89,7 +89,7 @@ class BarChart extends BaseChart<BarChartRefProps, BarChartState> {
     barRadius,
     withCustomBarColorFromData,
     onBarPress,
-    verticalLabelsHeightPercentage
+    verticalLabelsHeight = DEFAULT_X_LABELS_HEIGHT
   }: Pick<
     Omit<AbstractChartConfig, "data">,
     | "width"
@@ -97,12 +97,14 @@ class BarChart extends BaseChart<BarChartRefProps, BarChartState> {
     | "paddingRight"
     | "paddingTop"
     | "barRadius"
-    | "verticalLabelsHeightPercentage"
+    | "verticalLabelsHeight"
   > & {
     data: number[];
     withCustomBarColorFromData: boolean;
     onBarPress: BarChartProps["onBarPress"];
   }) => {
+    height = height - verticalLabelsHeight;
+    console.log({ height });
     const baseHeight = this.calcBaseHeight(data, height);
 
     return data.map((x, i) => {
@@ -114,10 +116,7 @@ class BarChart extends BaseChart<BarChartRefProps, BarChartState> {
         (i * (width - paddingRight)) / data.length +
         barWidth / 2;
       const cy =
-        (barHeight > 0 ? baseHeight - barHeight : baseHeight) *
-          (verticalLabelsHeightPercentage ||
-            DEFAULT_X_LABELS_HEIGHT_PERCENTAGE) +
-        paddingTop;
+        (barHeight > 0 ? baseHeight - barHeight : baseHeight) + paddingTop;
 
       const onPress = () => {
         if (!onBarPress) {
@@ -136,24 +135,11 @@ class BarChart extends BaseChart<BarChartRefProps, BarChartState> {
       return (
         <Rect
           key={Math.random()}
-          x={
-            paddingRight +
-            (i * (width - paddingRight)) / data.length +
-            barWidth / 2
-          }
-          y={
-            (barHeight > 0 ? baseHeight - barHeight : baseHeight) *
-              (verticalLabelsHeightPercentage ||
-                DEFAULT_X_LABELS_HEIGHT_PERCENTAGE) +
-            paddingTop
-          }
+          x={cx}
+          y={cy}
           rx={barRadius}
           width={barWidth}
-          height={
-            Math.abs(barHeight) *
-            (verticalLabelsHeightPercentage ||
-              DEFAULT_X_LABELS_HEIGHT_PERCENTAGE)
-          }
+          height={Math.abs(barHeight)}
           onPress={onPress}
           fill={
             withCustomBarColorFromData
@@ -171,14 +157,10 @@ class BarChart extends BaseChart<BarChartRefProps, BarChartState> {
     height,
     paddingTop,
     paddingRight,
-    verticalLabelsHeightPercentage
+    verticalLabelsHeight = DEFAULT_X_LABELS_HEIGHT
   }: Pick<
     Omit<AbstractChartConfig, "data">,
-    | "width"
-    | "height"
-    | "paddingRight"
-    | "paddingTop"
-    | "verticalLabelsHeightPercentage"
+    "width" | "height" | "paddingRight" | "paddingTop" | "verticalLabelsHeight"
   > & {
     data: number[];
   }) => {
@@ -195,12 +177,7 @@ class BarChart extends BaseChart<BarChartRefProps, BarChartState> {
             (i * (width - paddingRight)) / data.length +
             barWidth / 2
           }
-          y={
-            (baseHeight - barHeight) *
-              (verticalLabelsHeightPercentage ||
-                DEFAULT_X_LABELS_HEIGHT_PERCENTAGE) +
-            paddingTop
-          }
+          y={(baseHeight - barHeight) * verticalLabelsHeight + paddingTop}
           width={barWidth}
           height={2}
           fill={this.props.chartConfig.color(0.6)}
@@ -249,17 +226,14 @@ class BarChart extends BaseChart<BarChartRefProps, BarChartState> {
     height,
     paddingTop,
     paddingRight,
-    verticalLabelsHeightPercentage
+    verticalLabelsHeight = DEFAULT_X_LABELS_HEIGHT
   }: Pick<
     Omit<AbstractChartConfig, "data">,
-    | "width"
-    | "height"
-    | "paddingRight"
-    | "paddingTop"
-    | "verticalLabelsHeightPercentage"
+    "width" | "height" | "paddingRight" | "paddingTop" | "verticalLabelsHeight"
   > & {
     data: number[];
   }) => {
+    height = height - verticalLabelsHeight;
     const baseHeight = this.calcBaseHeight(data, height);
 
     const renderLabel = (value: number) => {
@@ -280,13 +254,7 @@ class BarChart extends BaseChart<BarChartRefProps, BarChartState> {
             (i * (width - paddingRight)) / data.length +
             barWidth / 1
           }
-          y={
-            (baseHeight - barHeight) *
-              (verticalLabelsHeightPercentage ||
-                DEFAULT_X_LABELS_HEIGHT_PERCENTAGE) +
-            paddingTop -
-            2
-          }
+          y={baseHeight - barHeight + paddingTop - 2}
           fill={this.props.chartConfig.color(0.6)}
           fontSize="12"
           textAnchor="middle"
@@ -327,9 +295,11 @@ class BarChart extends BaseChart<BarChartRefProps, BarChartState> {
       height,
       verticalLabelRotation,
       horizontalLabelRotation,
+      verticalLabelsHeight:
+        this.props.chartConfig.verticalLabelsHeight || DEFAULT_X_LABELS_HEIGHT,
       switchYLabelHeight: this.props.chartConfig.switchYLabelHeight,
-      verticalLabelsHeightPercentage:
-        this.props.chartConfig.verticalLabelsHeightPercentage || undefined,
+      verticalLabelsHeightPercentage: this.props.chartConfig
+        .verticalLabelsHeight,
       barRadius:
         (this.props.chartConfig && this.props.chartConfig.barRadius) || 0,
       decimalPlaces:
@@ -357,8 +327,6 @@ class BarChart extends BaseChart<BarChartRefProps, BarChartState> {
             <Rect
               width="100%"
               height={height}
-              // rx={borderRadius}
-              // ry={borderRadius}
               fill={
                 this.props.chartConfig.backgroundColor
                   ? this.props.chartConfig.backgroundColor
