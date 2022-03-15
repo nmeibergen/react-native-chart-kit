@@ -44,11 +44,11 @@ export interface HorizontalBarChartProps extends AbstractChartProps {
    */
   withHorizontalLabels?: boolean;
   /**
-      /**
-       * This function takes a [whole bunch](https://github.com/indiespirit/react-native-chart-kit/blob/master/src/line-chart.js#L266)
-       * of stuff and can render extra elements,
-       * such as data point info or additional markup.
-       */
+        /**
+         * This function takes a [whole bunch](https://github.com/indiespirit/react-native-chart-kit/blob/master/src/line-chart.js#L266)
+         * of stuff and can render extra elements,
+         * such as data point info or additional markup.
+         */
   decorator?: Function;
   /** Callback that is called when a data point is clicked.
    */
@@ -130,11 +130,6 @@ export class HorizontalBarChart extends InvertedChart<
           y: cy
         });
       };
-      console.log("BAR");
-      console.log({ x });
-      console.log({ cx });
-      console.log({ cy });
-      console.log({ barWidth });
       return (
         <Rect
           key={Math.random()}
@@ -229,47 +224,51 @@ export class HorizontalBarChart extends InvertedChart<
     height,
     paddingTop,
     paddingRight,
-    verticalLabelsHeight = DEFAULT_X_LABELS_HEIGHT
+    horizontalLabelsWidth = DEFAULT_Y_LABELS_WIDTH,
+    verticalOffset = 0
   }: Pick<
     Omit<AbstractChartConfig, "data">,
-    "width" | "height" | "paddingRight" | "paddingTop" | "verticalLabelsHeight"
+    | "width"
+    | "height"
+    | "paddingRight"
+    | "paddingTop"
+    | "horizontalLabelsWidth"
+    | "verticalOffset"
   > & {
     data: number[];
   }) => {
-    // const baseHeight = this.calcBaseHeight(data, height);
-    // const renderLabel = (value: number) => {
-    //     if (this.props.chartConfig.formatTopBarValue) {
-    //         return this.props.chartConfig.formatTopBarValue(value);
-    //     } else {
-    //         return value;
-    //     }
-    // };
-    // return data.map((x, i) => {
-    //     const barHeight = this.calcHeight(x, data, height);
-    //     const barWidth = 32 * this.getBarPercentage();
-    //     return (
-    //         <Text
-    //             key={Math.random()}
-    //             x={
-    //                 paddingRight +
-    //                 (i * (width - paddingRight)) / data.length +
-    //                 barWidth / 1
-    //             }
-    //             y={
-    //                 (baseHeight - barHeight) *
-    //                 (verticalLabelsHeightPercentage ||
-    //                     DEFAULT_X_LABELS_HEIGHT_PERCENTAGE) +
-    //                 paddingTop -
-    //                 2
-    //             }
-    //             fill={this.props.chartConfig.color(0.6)}
-    //             fontSize="12"
-    //             textAnchor="middle"
-    //         >
-    //             {renderLabel(data[i])}
-    //         </Text>
-    //     );
-    // });
+    const fontSize = 12;
+
+    const renderLabel = (value: number) => {
+      if (this.props.chartConfig.formatTopBarValue) {
+        return this.props.chartConfig.formatTopBarValue(value);
+      } else {
+        return value;
+      }
+    };
+
+    width = width - horizontalLabelsWidth;
+
+    const baseWidth = horizontalLabelsWidth;
+    return data.map((x, i) => {
+      const barWidth = this.calcHeight(x, data, width);
+      const barHeight = 32 * this.getBarPercentage();
+      const cy =
+        paddingTop + (i * (height - paddingTop)) / data.length + barHeight / 2;
+      const cx = baseWidth;
+      return (
+        <Text
+          key={Math.random()}
+          x={cx + barWidth + 2}
+          y={cy + verticalOffset + fontSize / 2}
+          fill={this.props.chartConfig.color(0.6)}
+          fontSize={fontSize}
+          textAnchor="start"
+        >
+          {renderLabel(data[i])}
+        </Text>
+      );
+    });
   };
   render() {
     const {
@@ -291,17 +290,25 @@ export class HorizontalBarChart extends InvertedChart<
       scrollViewProps = {},
       scrollViewRef
     } = this.props;
-    const { borderRadius = 0, paddingTop = 0, paddingRight = 0 } = style;
+    const { paddingTop = 0, paddingRight = 0 } = style;
+
+    // Width
     const fullWidth = this.props.width || 200;
-    const width = fullWidth - 20; // this is to account for spacing on the right side
+    const width = fullWidth - 40; // this is to account for spacing on the right side
+
+    // Height
+    const verticalLabelsHeight =
+      this.props.chartConfig.verticalLabelsHeight || 16;
+    const graphHeight = height - verticalLabelsHeight;
+
     const config = {
       width: width,
-      height,
+      height: graphHeight,
       verticalLabelRotation,
       horizontalLabelRotation,
+      verticalLabelsHeight,
       horizontalLabelsWidth: this.props.chartConfig.horizontalLabelsWidth,
       switchYLabelHeight: this.props.chartConfig.switchYLabelHeight,
-      verticalLabelsHeight: this.props.chartConfig.verticalLabelsHeight,
       barRadius:
         (this.props.chartConfig && this.props.chartConfig.barRadius) || 0,
       decimalPlaces:
@@ -318,7 +325,6 @@ export class HorizontalBarChart extends InvertedChart<
         }
     };
 
-    const graphHeight = height - config.verticalLabelsHeight;
     const graphContainerHeight = ((style && style.height) || 220) as number;
 
     return (
@@ -328,7 +334,7 @@ export class HorizontalBarChart extends InvertedChart<
           horizontal={false}
           bounces={false}
           nestedScrollEnabled={true}
-          style={{ height: graphContainerHeight - config.verticalLabelsHeight }}
+          style={{ height: graphContainerHeight - verticalLabelsHeight }}
           showsVerticalScrollIndicator={false}
           {...scrollViewProps}
         >
@@ -384,15 +390,17 @@ export class HorizontalBarChart extends InvertedChart<
                 onBarPress: onBarPress
               })}
             </G>
-            {/* <G>
-                            {showValuesOnTopOfBars &&
-                                this.renderValuesOnTopOfBars({
-                                    ...config,
-                                    data: data.datasets[0].data,
-                                    paddingTop: paddingTop as number,
-                                    paddingRight: paddingRight as number
-                                })}
-                        </G>
+            <G>
+              {showValuesOnTopOfBars &&
+                this.renderValuesOnTopOfBars({
+                  ...config,
+                  data: data.datasets[0].data,
+                  paddingTop: paddingTop as number,
+                  paddingRight: paddingRight as number,
+                  verticalOffset: (barWidth * this.getBarPercentage()) / 2
+                })}
+            </G>
+            {/* 
                         <G>
                             {showBarTops &&
                                 this.renderBarTops({

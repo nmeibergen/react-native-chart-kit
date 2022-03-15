@@ -597,7 +597,7 @@ export class InvertedChart<
       verticalLabelsHeight = DEFAULT_X_LABELS_HEIGHT
     } = config;
     const baseXPosition = horizontalLabelsWidth + paddingRight;
-    const baseYPosition = height - verticalLabelsHeight;
+    const baseYPosition = height;
 
     return [...new Array(count + 1)].map((_, i) => {
       const paddingRight = 0;
@@ -667,13 +667,18 @@ export class InvertedChart<
       const x =
         verticalLabelsWidth - verticalLabelsBaseOffsetFromChart + yLabelsOffset;
 
+      const { fontSize = 12, ...labelProps } = {
+        ...this.getPropsForLabels(),
+        ...this.getPropsForHorizontalLabels()
+      };
+
       return (
         <Text
           onPress={() => onPress({ index: i })}
           origin={`${x}, ${y}`}
           key={Math.random()}
           x={x}
-          y={y}
+          y={y + (fontSize as number) / 2}
           textAnchor="end"
           {...this.getPropsForLabels()}
           {...this.getPropsForHorizontalLabels()}
@@ -727,7 +732,6 @@ export class InvertedChart<
           : basePosition +
             ((width - horizontalLabelsWidth) / count) * i +
             paddingRight;
-
       return (
         <Text
           rotation={horizontalLabelRotation}
@@ -737,7 +741,7 @@ export class InvertedChart<
           textAnchor="middle"
           y={y}
           {...this.getPropsForLabels()}
-          {...this.getPropsForHorizontalLabels()}
+          {...this.getPropsForVerticalLabels()}
         >
           {xLabel}
         </Text>
