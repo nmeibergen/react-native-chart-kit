@@ -1,4 +1,11 @@
-import React, { RefObject, useCallback, useMemo, useState } from "react";
+import React, {
+  RefObject,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState
+} from "react";
 import { ScrollViewProps, View, ViewStyle } from "react-native";
 import Animated, { AnimateProps } from "react-native-reanimated";
 
@@ -34,6 +41,7 @@ export interface BarChartProps extends AbstractChartProps {
   style?: Partial<ViewStyle>;
   horizontalLabelRotation?: number;
   verticalLabelRotation?: number;
+  highlightedIndex?: number;
   /**
    * Show vertical labels - default: True.
    */
@@ -43,11 +51,11 @@ export interface BarChartProps extends AbstractChartProps {
    */
   withHorizontalLabels?: boolean;
   /**
-      /**
-       * This function takes a [whole bunch](https://github.com/indiespirit/react-native-chart-kit/blob/master/src/line-chart.js#L266)
-       * of stuff and can render extra elements,
-       * such as data point info or additional markup.
-       */
+        /**
+         * This function takes a [whole bunch](https://github.com/indiespirit/react-native-chart-kit/blob/master/src/line-chart.js#L266)
+         * of stuff and can render extra elements,
+         * such as data point info or additional markup.
+         */
   decorator?: Function;
   /** Callback that is called when a data point is clicked.
    */
@@ -70,10 +78,26 @@ export interface BarChartProps extends AbstractChartProps {
   highlightOnPressColor?: string;
 }
 
+export const useDidMountEffect = (func: any, deps: any[]) => {
+  const didMount = useRef(false);
+
+  useEffect(() => {
+    if (didMount.current) func();
+    else didMount.current = true;
+  }, deps);
+};
+
 export default React.forwardRef(
   (props: BarChartProps, ref: RefObject<Animated.ScrollView>) => {
     const baseChart = useBaseChart(props);
-    const [highlightIndex, setHighlightIndex] = useState<number | null>(null);
+
+    const [highlightIndex, setHighlightIndex] = useState<number | undefined>(
+      props.highlightedIndex
+    );
+
+    useDidMountEffect(() => {
+      setHighlightIndex(props.highlightedIndex);
+    }, [props.highlightedIndex]);
 
     const getBarPercentage = useCallback(() => {
       const { barPercentage = 1 } = props.chartConfig;
@@ -321,7 +345,7 @@ export default React.forwardRef(
       scrollViewProps = {}
     } = props;
 
-    const { borderRadius = 0, paddingTop = 16, paddingRight = 0 } = style;
+    const { paddingTop = 16, paddingRight = 0 } = style;
 
     const config = {
       width: width,
@@ -407,7 +431,11 @@ export default React.forwardRef(
           ? baseChart.renderVerticalLabels({
               ...config,
               highlightIndex: highlightIndex,
-              onPress: onBarPress,
+              onPress: ({ index }) => {
+                setHighlightIndex(index);
+                //@ts-ignore
+                onBarPress({ index });
+              },
               labels: data.labels,
               paddingRight: paddingRight as number,
               paddingTop: paddingTop as number,

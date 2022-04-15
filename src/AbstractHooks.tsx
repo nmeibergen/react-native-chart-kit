@@ -476,7 +476,7 @@ export const useBaseChart = (props: AbstractChartProps & any) => {
       verticalLabelRotation = 0,
       formatXLabel = xLabel => xLabel,
       verticalLabelsHeight = DEFAULT_X_LABELS_HEIGHT,
-      onPress = () => {}
+      onPress = ({ index }: { index: number }) => {}
     }: Pick<
       AbstractChartConfig,
       | "labels"
@@ -497,7 +497,6 @@ export const useBaseChart = (props: AbstractChartProps & any) => {
         hidePointsAtIndex = []
       } = props;
 
-      console.log("RENDER VERTICAL LABELS");
       const fontSize = 12;
 
       let fac = 1;
@@ -520,10 +519,6 @@ export const useBaseChart = (props: AbstractChartProps & any) => {
 
         const y = graphBottom + (fontSize * 3) / 2 + xLabelsOffset;
 
-        console.log(
-          `Is highlight index: ${highlightIndex !== null &&
-            i === highlightIndex}`
-        );
         return (
           <Text
             onPress={() => onPress({ index: i })}
