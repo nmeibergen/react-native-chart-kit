@@ -400,42 +400,10 @@ export class HorizontalBarChart extends InvertedChart<
                   verticalOffset: (barWidth * this.getBarPercentage()) / 2
                 })}
             </G>
-            {/* 
-                        <G>
-                            {showBarTops &&
-                                this.renderBarTops({
-                                    ...config,
-                                    data: data.datasets[0].data,
-                                    paddingTop: paddingTop as number,
-                                    paddingRight: paddingRight as number
-                                })}
-                        </G> */}
-            {/* <G>
-                            {decorator &&
-                                decorator({
-                                    ...config,
-                                    data: data.datasets[0].data,
-                                    paddingTop,
-                                    paddingRight
-                                })}
-                        </G> */}
           </Svg>
         </Animated.ScrollView>
         <View style={{ height: config.verticalLabelsHeight }}>
           <Svg width={fullWidth} height={config.verticalLabelsHeight}>
-            {/* {this.renderDefs({
-                            ...config,
-                            ...this.props.chartConfig
-                        })}
-                        <Rect
-                            width="100%"
-                            height={config.verticalLabelsHeight}
-                            fill={
-                                this.props.chartConfig.backgroundColor
-                                    ? this.props.chartConfig.backgroundColor
-                                    : "url(#backgroundGradient)"
-                            }
-                        /> */}
             <G>
               {withVerticalLabels
                 ? this.renderVerticalLabels({

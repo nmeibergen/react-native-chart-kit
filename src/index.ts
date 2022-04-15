@@ -1,5 +1,5 @@
 import { BaseChart as AbstractChart } from "./AbstractChart";
-import BarChart from "./BarChart";
+import BarChart from "./BarChartHooks";
 import HorizontalBarChart from "./HorizontalBarChart";
 import PieChart from "./PieChart";
 import ProgressChart from "./ProgressChart";

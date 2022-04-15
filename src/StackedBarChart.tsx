@@ -241,9 +241,6 @@ class StackedBarChart extends BaseChart<
       verticalLabelsHeight: this.props.chartConfig.verticalLabelsHeight
     };
 
-    console.log("verticalLabelsHeight");
-    console.log(config.verticalLabelsHeight);
-
     let border = 0;
 
     let max = 0;

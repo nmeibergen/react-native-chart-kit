@@ -104,7 +104,6 @@ class BarChart extends BaseChart<BarChartRefProps, BarChartState> {
     onBarPress: BarChartProps["onBarPress"];
   }) => {
     height = height - verticalLabelsHeight;
-    console.log({ height });
     const baseHeight = this.calcBaseHeight(data, height);
 
     return data.map((x, i) => {
