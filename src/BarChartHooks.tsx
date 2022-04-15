@@ -26,6 +26,7 @@ import {
   DEFAULT_X_LABELS_HEIGHT
 } from "./AbstractHooks";
 import { ChartData } from "./HelperTypes";
+import { useDidMountEffect } from "./hooks";
 
 const barWidth = 32;
 
@@ -41,7 +42,7 @@ export interface BarChartProps extends AbstractChartProps {
   style?: Partial<ViewStyle>;
   horizontalLabelRotation?: number;
   verticalLabelRotation?: number;
-  highlightedIndex?: number;
+
   /**
    * Show vertical labels - default: True.
    */
@@ -75,17 +76,8 @@ export interface BarChartProps extends AbstractChartProps {
   withCustomBarColorFromData?: boolean;
   flatColor?: boolean;
 
-  highlightOnPressColor?: string;
+  highlightedIndex?: number;
 }
-
-export const useDidMountEffect = (func: any, deps: any[]) => {
-  const didMount = useRef(false);
-
-  useEffect(() => {
-    if (didMount.current) func();
-    else didMount.current = true;
-  }, deps);
-};
 
 export default React.forwardRef(
   (props: BarChartProps, ref: RefObject<Animated.ScrollView>) => {
@@ -509,35 +501,36 @@ export default React.forwardRef(
       [config, data.datasets[0], paddingTop, paddingRight]
     );
 
+    const horizontalLabels = useMemo(
+      () =>
+        withHorizontalLabels
+          ? baseChart.renderHorizontalLabels({
+              ...config,
+              count: segments,
+              data: data.datasets[0].data,
+              width: yLabelsWidth,
+              paddingTop: paddingTop as number,
+              paddingRight: yLabelsWidth as number
+            })
+          : null,
+      [
+        baseChart.renderHorizontalLabels,
+        config,
+        segments,
+        data.datasets[0].data,
+        yLabelsWidth,
+        paddingTop,
+        yLabelsWidth
+      ]
+    );
+
     return (
       <View style={[style, { flexDirection: "row" }]}>
         <View>
           <Svg height={height} width={yLabelsWidth}>
-            {baseChart.renderDefs({
-              ...config,
-              ...props.chartConfig
-            })}
-            <Rect
-              width="100%"
-              height={height}
-              fill={
-                props.chartConfig.backgroundColor
-                  ? props.chartConfig.backgroundColor
-                  : "url(#backgroundGradient)"
-              }
-            />
-            <G>
-              {withHorizontalLabels
-                ? baseChart.renderHorizontalLabels({
-                    ...config,
-                    count: segments,
-                    data: data.datasets[0].data,
-                    width: yLabelsWidth,
-                    paddingTop: paddingTop as number,
-                    paddingRight: yLabelsWidth as number
-                  })
-                : null}
-            </G>
+            {defs}
+            {rect}
+            <G>{horizontalLabels}</G>
           </Svg>
         </View>
         <Animated.ScrollView

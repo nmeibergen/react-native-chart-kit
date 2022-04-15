@@ -16,7 +16,7 @@ export interface AbstractChartProps {
   xLabelsOffset?: number;
   hidePointsAtIndex?: number[];
   yLabelsWidth?: number;
-  higlightColor?: string;
+  highlightColor?: string;
   // xLabelsHeight?: number;
 }
 
