@@ -250,7 +250,7 @@ export default React.forwardRef(
       hideLegend = false
     } = props;
 
-    const { paddingRight = 0 } = style;
+    const { paddingRight = barWidth } = style;
     const config = {
       width,
       height,
