@@ -13,7 +13,7 @@ import { useBaseChart } from "./AbstractHooks";
 import { useDidMountEffect } from "./hooks";
 
 export interface StackedBarChartData {
-  labels: string[];
+  labels: (string | string[])[];
   legend: string[];
   data: number[][];
   barColors: string[];

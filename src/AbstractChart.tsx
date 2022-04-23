@@ -28,7 +28,7 @@ export interface AbstractChartConfig extends ChartConfig {
   paddingRight?: number;
   horizontalLabelRotation?: number;
   formatYLabel?: (yLabel: string) => string;
-  labels?: string[];
+  labels?: (string | string[])[];
   horizontalOffset?: number;
   verticalOffset?: number;
   stackedBar?: boolean;
@@ -489,6 +489,10 @@ export class BaseChart<
 
       const y = graphBottom + (fontSize * 3) / 2 + xLabelsOffset;
 
+      // here we did not implement the multiline label..
+      const xLabel = (Array.isArray(label) && label.length > 0
+        ? label[0]
+        : label) as string;
       return (
         <Text
           onPress={() => onPress({ index: i })}
@@ -507,7 +511,7 @@ export class BaseChart<
           {...this.getPropsForLabels()}
           {...this.getPropsForVerticalLabels()}
         >
-          {`${formatXLabel(label)}${xAxisLabel}`}
+          {`${formatXLabel(xLabel)}${xAxisLabel}`}
         </Text>
       );
     });
@@ -672,6 +676,10 @@ export class InvertedChart<
         ...this.getPropsForHorizontalLabels()
       };
 
+      // here we did not implement the multiline label..
+      const xLabel = (Array.isArray(label) && label.length > 0
+        ? label[0]
+        : label) as string;
       return (
         <Text
           onPress={() => onPress({ index: i })}
@@ -683,7 +691,7 @@ export class InvertedChart<
           {...this.getPropsForLabels()}
           {...this.getPropsForHorizontalLabels()}
         >
-          {`${formatXLabel(label)}${yAxisLabel}`}
+          {`${formatXLabel(xLabel)}${yAxisLabel}`}
         </Text>
       );
     });

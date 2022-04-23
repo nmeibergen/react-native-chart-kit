@@ -36,7 +36,7 @@ export interface AbstractChartConfig extends ChartConfig {
   paddingRight?: number;
   horizontalLabelRotation?: number;
   formatYLabel?: (yLabel: string) => string;
-  labels?: string[];
+  labels?: (string | string[])[];
   horizontalOffset?: number;
   verticalOffset?: number;
   stackedBar?: boolean;
