@@ -1,5 +1,12 @@
 import React, { Component, useCallback } from "react";
-import { Defs, Line, LinearGradient, Stop, Text } from "react-native-svg";
+import {
+  Defs,
+  Line,
+  LinearGradient,
+  Stop,
+  Text,
+  TSpan
+} from "react-native-svg";
 
 import { ChartConfig, Dataset, PartialBy } from "./HelperTypes";
 
@@ -519,7 +526,17 @@ export const useBaseChart = (props: AbstractChartProps & any) => {
 
         const y = graphBottom + (fontSize * 3) / 2 + xLabelsOffset;
 
-        return (
+        const BaseTextElement = ({
+          x,
+          y,
+          label,
+          suffix = ""
+        }: {
+          x: number;
+          y: number;
+          label: string;
+          suffix?: string;
+        }) => (
           <Text
             onPress={() => onPress({ index: i })}
             origin={`${x}, ${y}`}
@@ -539,9 +556,20 @@ export const useBaseChart = (props: AbstractChartProps & any) => {
               highlightIndex !== null && i === highlightIndex
             )}
           >
-            {`${formatXLabel(label)}${xAxisLabel}`}
+            {`${formatXLabel(label)}${suffix}`}
           </Text>
         );
+
+        const mapLabel: string[] = Array.isArray(label) ? label : [label];
+
+        return mapLabel.map((l: string, idx: number) => (
+          <BaseTextElement
+            x={x}
+            y={y + idx * 12}
+            label={l}
+            suffix={idx === mapLabel.length - 1 ? xAxisLabel : ""}
+          />
+        ));
       });
     },
     [
