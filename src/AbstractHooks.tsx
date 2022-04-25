@@ -564,6 +564,7 @@ export const useBaseChart = (props: AbstractChartProps & any) => {
 
         return mapLabel.map((l: string, idx: number) => (
           <BaseTextElement
+            key={idx}
             x={x}
             y={y + idx * 12}
             label={l}
