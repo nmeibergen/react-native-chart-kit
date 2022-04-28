@@ -1,5 +1,13 @@
 import React, { Component } from "react";
-import { Defs, Line, LinearGradient, Stop, Text } from "react-native-svg";
+import {
+  Defs,
+  G,
+  Line,
+  LinearGradient,
+  Rect,
+  Stop,
+  Text
+} from "react-native-svg";
 
 import { ChartConfig, Dataset, PartialBy } from "./HelperTypes";
 
@@ -681,18 +689,27 @@ export class InvertedChart<
         ? label[0]
         : label) as string;
       return (
-        <Text
-          onPress={() => onPress({ index: i })}
-          origin={`${x}, ${y}`}
-          key={Math.random()}
-          x={x}
-          y={y + (fontSize as number) / 2}
-          textAnchor="end"
-          {...this.getPropsForLabels()}
-          {...this.getPropsForHorizontalLabels()}
-        >
-          {`${formatXLabel(xLabel)}${yAxisLabel}`}
-        </Text>
+        <G>
+          <Rect
+            x={x - 50}
+            width={50}
+            y={y - 10}
+            height={20}
+            onPress={() => onPress({ index: i })}
+          />
+          <Text
+            onPress={() => onPress({ index: i })}
+            origin={`${x}, ${y}`}
+            key={Math.random()}
+            x={x}
+            y={y + (fontSize as number) / 2}
+            textAnchor="end"
+            {...this.getPropsForLabels()}
+            {...this.getPropsForHorizontalLabels()}
+          >
+            {`${formatXLabel(xLabel)}${yAxisLabel}`}
+          </Text>
+        </G>
       );
     });
   };

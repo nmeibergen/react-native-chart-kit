@@ -340,6 +340,11 @@ export default React.forwardRef(
         withVerticalLabels
           ? baseChart.renderVerticalLabels({
               ...config,
+              onPress: ({ index }) => {
+                setHighlightIndex(index);
+                //@ts-ignore
+                onBarPress({ index });
+              },
               highlightIndex: highlightIndex,
               labels: data.labels,
               paddingRight: paddingRight as number,

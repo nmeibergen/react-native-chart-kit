@@ -1,8 +1,10 @@
 import React, { Component, useCallback } from "react";
 import {
   Defs,
+  G,
   Line,
   LinearGradient,
+  Rect,
   Stop,
   Text,
   TSpan
@@ -537,27 +539,36 @@ export const useBaseChart = (props: AbstractChartProps & any) => {
           label: string;
           suffix?: string;
         }) => (
-          <Text
-            onPress={() => onPress({ index: i })}
-            origin={`${x}, ${y}`}
-            rotation={verticalLabelRotation}
-            key={Math.random()}
-            x={x}
-            y={y}
-            textAnchor={
-              verticalLabelRotation === 0
-                ? "middle"
-                : verticalLabelRotation < 0
-                ? "end"
-                : "start"
-            }
-            {...abstractChart.getPropsForLabels()}
-            {...abstractChart.getPropsForVerticalLabels(
-              highlightIndex !== null && i === highlightIndex
-            )}
-          >
-            {`${formatXLabel(label)}${suffix}`}
-          </Text>
+          <G>
+            <Rect
+              x={x - 10}
+              width={20}
+              y={y - 20}
+              height={20}
+              onPress={() => onPress({ index: i })}
+            />
+            <Text
+              onPress={() => onPress({ index: i })}
+              origin={`${x}, ${y}`}
+              rotation={verticalLabelRotation}
+              key={Math.random()}
+              x={x}
+              y={y}
+              textAnchor={
+                verticalLabelRotation === 0
+                  ? "middle"
+                  : verticalLabelRotation < 0
+                  ? "end"
+                  : "start"
+              }
+              {...abstractChart.getPropsForLabels()}
+              {...abstractChart.getPropsForVerticalLabels(
+                highlightIndex !== null && i === highlightIndex
+              )}
+            >
+              {`${formatXLabel(label)}${suffix}`}
+            </Text>
+          </G>
         );
 
         const mapLabel: string[] = Array.isArray(label) ? label : [label];
