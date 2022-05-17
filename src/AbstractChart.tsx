@@ -1,5 +1,13 @@
 import React, { Component } from "react";
-import { Defs, Line, LinearGradient, Stop, Text } from "react-native-svg";
+import {
+  Defs,
+  G,
+  Line,
+  LinearGradient,
+  Rect,
+  Stop,
+  Text
+} from "react-native-svg";
 
 import { ChartConfig, Dataset, PartialBy } from "./HelperTypes";
 
@@ -9,11 +17,14 @@ export interface AbstractChartProps {
   chartConfig?: AbstractChartConfig;
   yAxisLabel?: string;
   yAxisSuffix?: string;
+  xAxisSuffix?: string;
   yLabelsOffset?: number;
   yAxisInterval?: number;
   xAxisLabel?: string;
   xLabelsOffset?: number;
   hidePointsAtIndex?: number[];
+  yLabelsWidth?: number;
+  // xLabelsHeight?: number;
 }
 
 export interface AbstractChartConfig extends ChartConfig {
@@ -25,12 +36,14 @@ export interface AbstractChartConfig extends ChartConfig {
   paddingRight?: number;
   horizontalLabelRotation?: number;
   formatYLabel?: (yLabel: string) => string;
-  labels?: string[];
+  labels?: (string | string[])[];
   horizontalOffset?: number;
+  verticalOffset?: number;
   stackedBar?: boolean;
   verticalLabelRotation?: number;
   formatXLabel?: (xLabel: string) => string;
-  verticalLabelsHeightPercentage?: number;
+  verticalLabelsHeight?: number;
+  horizontalLabelsWidth?: number;
   switchYLabelHeight?: number;
   formatTopBarValue?: (topBarValue: number) => string | number;
   onPress?: (data: any) => void;
@@ -38,7 +51,8 @@ export interface AbstractChartConfig extends ChartConfig {
 
 export type AbstractChartState = {};
 
-export const DEFAULT_X_LABELS_HEIGHT_PERCENTAGE = 0.75;
+export const DEFAULT_X_LABELS_HEIGHT = 20; // percentage from top
+export const DEFAULT_Y_LABELS_WIDTH = 64; // percentage from left
 
 class AbstractChart<
   IProps extends AbstractChartProps,
@@ -136,274 +150,6 @@ class AbstractChart<
       ...propsForHorizontalLabels
     };
   }
-
-  renderHorizontalLines = config => {
-    const {
-      count,
-      width,
-      height,
-      paddingTop,
-      // paddingRight,
-      verticalLabelsHeightPercentage = DEFAULT_X_LABELS_HEIGHT_PERCENTAGE
-    } = config;
-    const basePosition = height * verticalLabelsHeightPercentage;
-
-    return [...new Array(count + 1)].map((_, i) => {
-      const paddingRight = 0;
-      const y = (basePosition / count) * i + paddingTop;
-      return (
-        <Line
-          key={Math.random()}
-          x1={paddingRight}
-          y1={y}
-          x2={width}
-          y2={y}
-          {...this.getPropsForBackgroundLines()}
-        />
-      );
-    });
-  };
-
-  renderHorizontalLine = config => {
-    const {
-      width,
-      height,
-      paddingTop,
-      // paddingRight,
-      verticalLabelsHeightPercentage = DEFAULT_X_LABELS_HEIGHT_PERCENTAGE
-    } = config;
-
-    // PaddingRight should only happen for the labels and chart, not the lines inside the chart.
-    const paddingRight = 0;
-
-    return (
-      <Line
-        key={Math.random()}
-        x1={paddingRight}
-        y1={height * verticalLabelsHeightPercentage + paddingTop}
-        x2={width}
-        y2={height * verticalLabelsHeightPercentage + paddingTop}
-        {...this.getPropsForBackgroundLines()}
-      />
-    );
-  };
-
-  renderHorizontalLabels = (
-    config: Omit<AbstractChartConfig, "data"> & { data: number[] }
-  ) => {
-    const {
-      count,
-      data,
-      height,
-      paddingTop,
-      paddingRight,
-      horizontalLabelRotation = 0,
-      decimalPlaces = 2,
-      formatYLabel = (yLabel: string) => yLabel,
-      verticalLabelsHeightPercentage = DEFAULT_X_LABELS_HEIGHT_PERCENTAGE
-    } = config;
-
-    const {
-      yAxisLabel = "",
-      yAxisSuffix = "",
-      yLabelsOffset = 12
-    } = this.props;
-    return new Array(count === 1 ? 1 : count + 1).fill(1).map((_, i) => {
-      let yLabel = String(i * count);
-
-      if (count === 1) {
-        yLabel = `${yAxisLabel}${formatYLabel(
-          data[0].toFixed(decimalPlaces)
-        )}${yAxisSuffix}`;
-      } else {
-        const label = this.props.fromZero
-          ? (this.calcScaler(data) / count) * i + Math.min(...data, 0)
-          : (this.calcScaler(data) / count) * i + Math.min(...data);
-        yLabel = `${yAxisLabel}${formatYLabel(
-          label.toFixed(decimalPlaces)
-        )}${yAxisSuffix}`;
-      }
-
-      const basePosition = height * verticalLabelsHeightPercentage;
-      const x = paddingRight - yLabelsOffset;
-      const y =
-        count === 1 && this.props.fromZero
-          ? paddingTop + 4
-          : height * verticalLabelsHeightPercentage -
-            (basePosition / count) * i +
-            paddingTop;
-      return (
-        <Text
-          rotation={horizontalLabelRotation}
-          origin={`${x}, ${y}`}
-          key={Math.random()}
-          x={x}
-          textAnchor="end"
-          y={y}
-          {...this.getPropsForLabels()}
-          {...this.getPropsForHorizontalLabels()}
-        >
-          {yLabel}
-        </Text>
-      );
-    });
-  };
-
-  renderVerticalLabels = ({
-    labels = [],
-    width,
-    height,
-    paddingRight,
-    paddingTop,
-    horizontalOffset = 0,
-    stackedBar = false,
-    verticalLabelRotation = 0,
-    formatXLabel = xLabel => xLabel,
-    switchYLabelHeight = 0,
-    verticalLabelsHeightPercentage = DEFAULT_X_LABELS_HEIGHT_PERCENTAGE,
-    onPress = () => {}
-  }: Pick<
-    AbstractChartConfig,
-    | "labels"
-    | "width"
-    | "height"
-    | "paddingRight"
-    | "paddingTop"
-    | "horizontalOffset"
-    | "stackedBar"
-    | "verticalLabelRotation"
-    | "formatXLabel"
-    | "switchYLabelHeight"
-    | "verticalLabelsHeightPercentage"
-    | "onPress"
-  >) => {
-    const {
-      xAxisLabel = "",
-      xLabelsOffset = 0,
-      hidePointsAtIndex = []
-    } = this.props;
-
-    const fontSize = 12;
-
-    let fac = 1;
-    if (stackedBar) {
-      fac = 0.71;
-    }
-
-    return labels.map((label, i) => {
-      if (hidePointsAtIndex.includes(i)) {
-        return null;
-      }
-
-      const graphBottom = height * verticalLabelsHeightPercentage + paddingTop;
-
-      const x =
-        (((width - paddingRight) / labels.length) * i +
-          paddingRight +
-          horizontalOffset) *
-        fac;
-
-      const y = graphBottom + (fontSize * 3) / 2 + xLabelsOffset;
-
-      return (
-        <>
-          {i % 2 === 1 && switchYLabelHeight >= fontSize ? (
-            <Line
-              x1={x}
-              x2={x}
-              y1={graphBottom}
-              y2={y + Math.max(0, switchYLabelHeight - fontSize)}
-              stroke={this.getPropsForBackgroundLines().stroke}
-            />
-          ) : null}
-          <Text
-            onPress={() => onPress({ index: i })}
-            origin={`${x}, ${y}`}
-            rotation={verticalLabelRotation}
-            key={Math.random()}
-            x={x}
-            y={y + (i % 2 === 1 ? switchYLabelHeight : 0)}
-            textAnchor={
-              verticalLabelRotation === 0
-                ? "middle"
-                : verticalLabelRotation < 0
-                ? "end"
-                : "start"
-            }
-            {...this.getPropsForLabels()}
-            {...this.getPropsForVerticalLabels()}
-          >
-            {`${formatXLabel(label)}${xAxisLabel}`}
-          </Text>
-        </>
-      );
-    });
-  };
-
-  renderVerticalLines = ({
-    data,
-    width,
-    height,
-    paddingTop,
-    paddingRight,
-    verticalLabelsHeightPercentage = DEFAULT_X_LABELS_HEIGHT_PERCENTAGE
-  }: Omit<
-    Pick<
-      AbstractChartConfig,
-      | "data"
-      | "width"
-      | "height"
-      | "paddingRight"
-      | "paddingTop"
-      | "verticalLabelsHeightPercentage"
-    >,
-    "data"
-  > & { data: number[] }) => {
-    const { yAxisInterval = 1 } = this.props;
-
-    // PaddingRight should only happen for the labels and chart, not the lines inside the chart.
-    paddingRight = 0;
-
-    return [...new Array(Math.ceil(data.length / yAxisInterval))].map(
-      (_, i) => {
-        return (
-          <Line
-            key={Math.random()}
-            x1={Math.floor(
-              ((width - paddingRight) / (data.length / yAxisInterval)) * i +
-                paddingRight
-            )}
-            y1={0}
-            x2={Math.floor(
-              ((width - paddingRight) / (data.length / yAxisInterval)) * i +
-                paddingRight
-            )}
-            y2={height * verticalLabelsHeightPercentage + paddingTop}
-            {...this.getPropsForBackgroundLines()}
-          />
-        );
-      }
-    );
-  };
-
-  renderVerticalLine = ({
-    height,
-    paddingTop,
-    paddingRight,
-    verticalLabelsHeightPercentage = DEFAULT_X_LABELS_HEIGHT_PERCENTAGE
-  }: Pick<
-    AbstractChartConfig,
-    "height" | "paddingRight" | "paddingTop" | "verticalLabelsHeightPercentage"
-  >) => (
-    <Line
-      key={Math.random()}
-      x1={Math.floor(paddingRight)}
-      y1={0}
-      x2={Math.floor(paddingRight)}
-      y2={height * verticalLabelsHeightPercentage + paddingTop}
-      {...this.getPropsForBackgroundLines()}
-    />
-  );
 
   renderDefs = (
     config: Pick<
@@ -574,4 +320,457 @@ class AbstractChart<
   };
 }
 
-export default AbstractChart;
+export class BaseChart<
+  IProps extends AbstractChartProps,
+  IState extends AbstractChartState
+> extends AbstractChart<
+  AbstractChartProps & IProps,
+  AbstractChartState & IState
+> {
+  renderHorizontalLines = config => {
+    const {
+      count,
+      width,
+      height,
+      paddingTop,
+      // paddingRight,
+      verticalLabelsHeight = DEFAULT_X_LABELS_HEIGHT
+    } = config;
+    const basePosition = height - verticalLabelsHeight;
+
+    return [...new Array(count + 1)].map((_, i) => {
+      const paddingRight = 0;
+      const y = (basePosition / count) * i + paddingTop;
+      return (
+        <Line
+          key={Math.random()}
+          x1={paddingRight}
+          y1={y}
+          x2={width}
+          y2={y}
+          {...this.getPropsForBackgroundLines()}
+        />
+      );
+    });
+  };
+
+  renderHorizontalLine = config => {
+    const {
+      width,
+      height,
+      paddingTop,
+      // paddingRight,
+      verticalLabelsHeight = DEFAULT_X_LABELS_HEIGHT
+    } = config;
+
+    // PaddingRight should only happen for the labels and chart, not the lines inside the chart.
+    const paddingRight = 0;
+
+    return (
+      <Line
+        key={Math.random()}
+        x1={paddingRight}
+        y1={height - verticalLabelsHeight + paddingTop}
+        x2={width}
+        y2={height - verticalLabelsHeight + paddingTop}
+        {...this.getPropsForBackgroundLines()}
+      />
+    );
+  };
+
+  renderHorizontalLabels = (
+    config: Omit<AbstractChartConfig, "data"> & { data: number[] }
+  ) => {
+    const {
+      count,
+      data,
+      height,
+      paddingTop,
+      paddingRight,
+      horizontalLabelRotation = 0,
+      decimalPlaces = 2,
+      formatYLabel = (yLabel: string) => yLabel,
+      verticalLabelsHeight = DEFAULT_X_LABELS_HEIGHT
+    } = config;
+
+    const {
+      yAxisLabel = "",
+      yAxisSuffix = "",
+      yLabelsOffset = 12
+    } = this.props;
+    return new Array(count === 1 ? 1 : count + 1).fill(1).map((_, i) => {
+      let yLabel = String(i * count);
+
+      if (count === 1) {
+        yLabel = `${yAxisLabel}${formatYLabel(
+          data[0].toFixed(decimalPlaces)
+        )}${yAxisSuffix}`;
+      } else {
+        const label = this.props.fromZero
+          ? (this.calcScaler(data) / count) * i + Math.min(...data, 0)
+          : (this.calcScaler(data) / count) * i + Math.min(...data);
+        yLabel = `${yAxisLabel}${formatYLabel(
+          label.toFixed(decimalPlaces)
+        )}${yAxisSuffix}`;
+      }
+
+      const basePosition = height - verticalLabelsHeight;
+      const x = paddingRight - yLabelsOffset;
+      const y =
+        count === 1 && this.props.fromZero
+          ? paddingTop + 4
+          : height -
+            verticalLabelsHeight -
+            (basePosition / count) * i +
+            paddingTop;
+
+      return (
+        <Text
+          rotation={horizontalLabelRotation}
+          origin={`${x}, ${y}`}
+          key={Math.random()}
+          x={x}
+          textAnchor="end"
+          y={y}
+          {...this.getPropsForLabels()}
+          {...this.getPropsForHorizontalLabels()}
+        >
+          {yLabel}
+        </Text>
+      );
+    });
+  };
+
+  renderVerticalLabels = ({
+    labels = [],
+    width,
+    height,
+    paddingRight,
+    paddingTop,
+    horizontalOffset = 0,
+    stackedBar = false,
+    verticalLabelRotation = 0,
+    formatXLabel = xLabel => xLabel,
+    switchYLabelHeight = 0,
+    verticalLabelsHeight = DEFAULT_X_LABELS_HEIGHT,
+    onPress = () => {}
+  }: Pick<
+    AbstractChartConfig,
+    | "labels"
+    | "width"
+    | "height"
+    | "paddingRight"
+    | "paddingTop"
+    | "horizontalOffset"
+    | "stackedBar"
+    | "verticalLabelRotation"
+    | "formatXLabel"
+    | "switchYLabelHeight"
+    | "verticalLabelsHeight"
+    | "onPress"
+  >) => {
+    const {
+      xAxisLabel = "",
+      xLabelsOffset = 0,
+      hidePointsAtIndex = []
+    } = this.props;
+
+    const fontSize = 12;
+
+    let fac = 1;
+    if (stackedBar) {
+      fac = 0.71;
+    }
+
+    return labels.map((label, i) => {
+      if (hidePointsAtIndex.includes(i)) {
+        return null;
+      }
+
+      const graphBottom = height - verticalLabelsHeight + paddingTop;
+
+      const x =
+        (((width - paddingRight) / labels.length) * i +
+          paddingRight +
+          horizontalOffset) *
+        fac;
+
+      const y = graphBottom + (fontSize * 3) / 2 + xLabelsOffset;
+
+      // here we did not implement the multiline label..
+      const xLabel = (Array.isArray(label) && label.length > 0
+        ? label[0]
+        : label) as string;
+      return (
+        <Text
+          onPress={() => onPress({ index: i })}
+          origin={`${x}, ${y}`}
+          rotation={verticalLabelRotation}
+          key={Math.random()}
+          x={x}
+          y={y}
+          textAnchor={
+            verticalLabelRotation === 0
+              ? "middle"
+              : verticalLabelRotation < 0
+              ? "end"
+              : "start"
+          }
+          {...this.getPropsForLabels()}
+          {...this.getPropsForVerticalLabels()}
+        >
+          {`${formatXLabel(xLabel)}${xAxisLabel}`}
+        </Text>
+      );
+    });
+  };
+
+  renderVerticalLines = ({
+    data,
+    width,
+    height,
+    paddingTop,
+    paddingRight,
+    verticalLabelsHeight = DEFAULT_X_LABELS_HEIGHT
+  }: Omit<
+    Pick<
+      AbstractChartConfig,
+      | "data"
+      | "width"
+      | "height"
+      | "paddingRight"
+      | "paddingTop"
+      | "verticalLabelsHeight"
+    >,
+    "data"
+  > & { data: number[] }) => {
+    const { yAxisInterval = 1 } = this.props;
+
+    // PaddingRight should only happen for the labels and chart, not the lines inside the chart.
+    paddingRight = 0;
+
+    return [...new Array(Math.ceil(data.length / yAxisInterval))].map(
+      (_, i) => {
+        return (
+          <Line
+            key={Math.random()}
+            x1={Math.floor(
+              ((width - paddingRight) / (data.length / yAxisInterval)) * i +
+                paddingRight
+            )}
+            y1={0}
+            x2={Math.floor(
+              ((width - paddingRight) / (data.length / yAxisInterval)) * i +
+                paddingRight
+            )}
+            y2={height - verticalLabelsHeight + paddingTop}
+            {...this.getPropsForBackgroundLines()}
+          />
+        );
+      }
+    );
+  };
+
+  renderVerticalLine = ({
+    height,
+    paddingTop,
+    paddingRight,
+    verticalLabelsHeight = DEFAULT_X_LABELS_HEIGHT
+  }: Pick<
+    AbstractChartConfig,
+    "height" | "paddingRight" | "paddingTop" | "verticalLabelsHeight"
+  >) => (
+    <Line
+      key={Math.random()}
+      x1={Math.floor(paddingRight)}
+      y1={0}
+      x2={Math.floor(paddingRight)}
+      y2={height - verticalLabelsHeight + paddingTop}
+      {...this.getPropsForBackgroundLines()}
+    />
+  );
+}
+
+export class InvertedChart<
+  IProps extends AbstractChartProps,
+  IState extends AbstractChartState
+> extends AbstractChart<
+  AbstractChartProps & IProps,
+  AbstractChartState & IState
+> {
+  renderVerticalLines = config => {
+    const {
+      count,
+      width,
+      height,
+      paddingTop,
+      paddingRight,
+      horizontalLabelsWidth = DEFAULT_Y_LABELS_WIDTH,
+      verticalLabelsHeight = DEFAULT_X_LABELS_HEIGHT
+    } = config;
+    const baseXPosition = horizontalLabelsWidth + paddingRight;
+    const baseYPosition = height;
+
+    return [...new Array(count + 1)].map((_, i) => {
+      const paddingRight = 0;
+      const x =
+        baseXPosition +
+        ((width - horizontalLabelsWidth) / count) * i +
+        paddingRight;
+
+      return (
+        <Line
+          key={Math.random()}
+          x1={x}
+          y1={paddingTop}
+          x2={x}
+          y2={baseYPosition}
+          {...this.getPropsForBackgroundLines()}
+        />
+      );
+    });
+  };
+
+  renderHorizontalLabels = ({
+    labels = [],
+    width,
+    height,
+    paddingRight,
+    paddingTop,
+    verticalOffset = 0,
+    stackedBar = false,
+    formatXLabel = xLabel => xLabel,
+    horizontalLabelsWidth = DEFAULT_Y_LABELS_WIDTH,
+    onPress = () => {}
+  }: Pick<
+    AbstractChartConfig,
+    | "labels"
+    | "width"
+    | "height"
+    | "paddingRight"
+    | "paddingTop"
+    | "verticalOffset"
+    | "stackedBar"
+    | "verticalLabelRotation"
+    | "formatXLabel"
+    | "horizontalLabelsWidth"
+    | "onPress"
+  >) => {
+    const {
+      yAxisLabel = "",
+      yLabelsOffset = 0,
+      hidePointsAtIndex = []
+    } = this.props;
+
+    return labels.map((label, i) => {
+      if (hidePointsAtIndex.includes(i)) {
+        return null;
+      }
+
+      // const graphBottom = height * verticalLabelsHeight + paddingTop;
+      const verticalLabelsWidth = horizontalLabelsWidth;
+      const verticalLabelsBaseOffsetFromChart = 15;
+
+      const y =
+        ((height - paddingTop) / labels.length) * i +
+        paddingTop +
+        verticalOffset;
+
+      const x =
+        verticalLabelsWidth - verticalLabelsBaseOffsetFromChart + yLabelsOffset;
+
+      const { fontSize = 12, ...labelProps } = {
+        ...this.getPropsForLabels(),
+        ...this.getPropsForHorizontalLabels()
+      };
+
+      // here we did not implement the multiline label..
+      const xLabel = (Array.isArray(label) && label.length > 0
+        ? label[0]
+        : label) as string;
+      return (
+        <G key={Math.random()}>
+          <Rect
+            x={x - 50}
+            width={50}
+            y={y - 10}
+            height={20}
+            onPress={() => onPress({ index: i })}
+          />
+          <Text
+            onPress={() => onPress({ index: i })}
+            origin={`${x}, ${y}`}
+            key={Math.random()}
+            x={x}
+            y={y + (fontSize as number) / 2}
+            textAnchor="end"
+            {...this.getPropsForLabels()}
+            {...this.getPropsForHorizontalLabels()}
+          >
+            {`${formatXLabel(xLabel)}${yAxisLabel}`}
+          </Text>
+        </G>
+      );
+    });
+  };
+
+  renderVerticalLabels = (
+    config: Omit<AbstractChartConfig, "data"> & { data: number[] }
+  ) => {
+    const {
+      count,
+      data,
+      width,
+      paddingRight = 0,
+      horizontalLabelRotation = 0,
+      decimalPlaces = 2,
+      formatYLabel = (yLabel: string) => yLabel,
+      horizontalLabelsWidth = DEFAULT_Y_LABELS_WIDTH
+    } = config;
+
+    const {
+      xAxisLabel = "",
+      xAxisSuffix = "",
+      xLabelsOffset = 12
+    } = this.props;
+
+    return new Array(count === 1 ? 1 : count + 1).fill(1).map((_, i) => {
+      let xLabel = String(i * count);
+      if (count === 1) {
+        xLabel = `${xAxisLabel}${formatYLabel(
+          data[0].toFixed(decimalPlaces)
+        )}${xAxisSuffix}`;
+      } else {
+        const label = this.props.fromZero
+          ? (this.calcScaler(data) / count) * i + Math.min(...data, 0)
+          : (this.calcScaler(data) / count) * i + Math.min(...data);
+        xLabel = `${xAxisLabel}${formatYLabel(
+          label.toFixed(decimalPlaces)
+        )}${xAxisSuffix}`;
+      }
+
+      const basePosition = horizontalLabelsWidth;
+      const y = xLabelsOffset;
+      const x =
+        count === 1 && this.props.fromZero
+          ? paddingRight + 4
+          : basePosition +
+            ((width - horizontalLabelsWidth) / count) * i +
+            paddingRight;
+      return (
+        <Text
+          rotation={horizontalLabelRotation}
+          origin={`${x}, ${y}`}
+          key={Math.random()}
+          x={x}
+          textAnchor="middle"
+          y={y}
+          {...this.getPropsForLabels()}
+          {...this.getPropsForVerticalLabels()}
+        >
+          {xLabel}
+        </Text>
+      );
+    });
+  };
+}

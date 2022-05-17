@@ -3,7 +3,8 @@ import React from "react";
 import { View, ViewStyle } from "react-native";
 import { G, Path, Rect, Svg, Text } from "react-native-svg";
 
-import AbstractChart, {
+import {
+  BaseChart,
   AbstractChartConfig,
   AbstractChartProps
 } from "./AbstractChart";
@@ -29,10 +30,7 @@ export interface ProgressChartProps extends AbstractChartProps {
 
 type ProgressChartState = {};
 
-class ProgressChart extends AbstractChart<
-  ProgressChartProps,
-  ProgressChartState
-> {
+class ProgressChart extends BaseChart<ProgressChartProps, ProgressChartState> {
   public static defaultProps = { style: {}, strokeWidth: 16, radius: 32 };
 
   render() {

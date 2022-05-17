@@ -32,7 +32,7 @@ export interface Dataset {
 
 export interface ChartData {
   /** The x-axis labels */
-  labels: string[];
+  labels: (string | string[])[];
   datasets: Dataset[];
 }
 

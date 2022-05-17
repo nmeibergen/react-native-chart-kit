@@ -3,7 +3,7 @@ import React from "react";
 import { View, ViewStyle } from "react-native";
 import { G, Path, Rect, Svg, Text } from "react-native-svg";
 
-import AbstractChart, { AbstractChartProps } from "./AbstractChart";
+import { BaseChart, AbstractChartProps } from "./AbstractChart";
 
 export interface PieChartProps extends AbstractChartProps {
   data: Array<any>;
@@ -21,7 +21,7 @@ export interface PieChartProps extends AbstractChartProps {
 
 type PieChartState = {};
 
-class PieChart extends AbstractChart<PieChartProps, PieChartState> {
+class PieChart extends BaseChart<PieChartProps, PieChartState> {
   render() {
     const {
       style = {},

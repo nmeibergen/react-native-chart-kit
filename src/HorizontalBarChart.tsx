@@ -13,16 +13,17 @@ import {
 } from "react-native-svg";
 
 import {
-  BaseChart,
+  InvertedChart,
   AbstractChartConfig,
   AbstractChartProps,
+  DEFAULT_Y_LABELS_WIDTH,
   DEFAULT_X_LABELS_HEIGHT
 } from "./AbstractChart";
 import { ChartData } from "./HelperTypes";
 
 const barWidth = 32;
 
-export interface BarChartProps extends AbstractChartProps {
+export interface HorizontalBarChartProps extends AbstractChartProps {
   data: ChartData;
   width: number;
   height: number;
@@ -43,11 +44,11 @@ export interface BarChartProps extends AbstractChartProps {
    */
   withHorizontalLabels?: boolean;
   /**
-  /**
-   * This function takes a [whole bunch](https://github.com/indiespirit/react-native-chart-kit/blob/master/src/line-chart.js#L266)
-   * of stuff and can render extra elements,
-   * such as data point info or additional markup.
-   */
+        /**
+         * This function takes a [whole bunch](https://github.com/indiespirit/react-native-chart-kit/blob/master/src/line-chart.js#L266)
+         * of stuff and can render extra elements,
+         * such as data point info or additional markup.
+         */
   decorator?: Function;
   /** Callback that is called when a data point is clicked.
    */
@@ -58,7 +59,7 @@ export interface BarChartProps extends AbstractChartProps {
     x: number;
     y: number;
   }) => void;
-  yLabelsWidth?: number;
+  // xLabelsHeight?: number;
   scrollViewProps?: AnimateProps<ScrollViewProps>;
 
   segments?: number;
@@ -68,18 +69,20 @@ export interface BarChartProps extends AbstractChartProps {
   flatColor?: boolean;
 }
 
-interface BarChartRefProps extends BarChartProps {
+interface BarChartRefProps extends HorizontalBarChartProps {
   scrollViewRef: RefObject<Animated.ScrollView>;
 }
 
 type BarChartState = {};
 
-class BarChart extends BaseChart<BarChartRefProps, BarChartState> {
+export class HorizontalBarChart extends InvertedChart<
+  BarChartRefProps,
+  BarChartState
+> {
   getBarPercentage = () => {
     const { barPercentage = 1 } = this.props.chartConfig;
     return barPercentage;
   };
-
   renderBars = ({
     data,
     width,
@@ -89,7 +92,7 @@ class BarChart extends BaseChart<BarChartRefProps, BarChartState> {
     barRadius,
     withCustomBarColorFromData,
     onBarPress,
-    verticalLabelsHeight = DEFAULT_X_LABELS_HEIGHT
+    horizontalLabelsWidth = DEFAULT_Y_LABELS_WIDTH
   }: Pick<
     Omit<AbstractChartConfig, "data">,
     | "width"
@@ -97,31 +100,28 @@ class BarChart extends BaseChart<BarChartRefProps, BarChartState> {
     | "paddingRight"
     | "paddingTop"
     | "barRadius"
-    | "verticalLabelsHeight"
+    | "horizontalLabelsWidth"
   > & {
     data: number[];
     withCustomBarColorFromData: boolean;
-    onBarPress: BarChartProps["onBarPress"];
+    onBarPress: HorizontalBarChartProps["onBarPress"];
   }) => {
-    height = height - verticalLabelsHeight;
-    const baseHeight = this.calcBaseHeight(data, height);
+    // Doesn't work yet for negative values in the chart...
 
+    width = width - horizontalLabelsWidth;
+
+    // const baseWidth = this.calcBaseHeight(data, width);
+    const baseWidth = horizontalLabelsWidth;
     return data.map((x, i) => {
-      const barHeight = this.calcHeight(x, data, height);
-      const barWidth = 32 * this.getBarPercentage();
-
-      const cx =
-        paddingRight +
-        (i * (width - paddingRight)) / data.length +
-        barWidth / 2;
+      const barWidth = this.calcHeight(x, data, width);
+      const barHeight = 32 * this.getBarPercentage();
       const cy =
-        (barHeight > 0 ? baseHeight - barHeight : baseHeight) + paddingTop;
-
+        paddingTop + (i * (height - paddingTop)) / data.length + barHeight / 2;
+      const cx = baseWidth;
       const onPress = () => {
         if (!onBarPress) {
           return;
         }
-
         onBarPress({
           index: i,
           value: x,
@@ -130,15 +130,14 @@ class BarChart extends BaseChart<BarChartRefProps, BarChartState> {
           y: cy
         });
       };
-
       return (
         <Rect
           key={Math.random()}
           x={cx}
           y={cy}
           rx={barRadius}
-          width={barWidth}
-          height={Math.abs(barHeight)}
+          width={Math.abs(barWidth)}
+          height={barHeight}
           onPress={onPress}
           fill={
             withCustomBarColorFromData
@@ -149,7 +148,6 @@ class BarChart extends BaseChart<BarChartRefProps, BarChartState> {
       );
     });
   };
-
   renderBarTops = ({
     data,
     width,
@@ -163,28 +161,31 @@ class BarChart extends BaseChart<BarChartRefProps, BarChartState> {
   > & {
     data: number[];
   }) => {
-    const baseHeight = this.calcBaseHeight(data, height);
-
-    return data.map((x, i) => {
-      const barHeight = this.calcHeight(x, data, height);
-      const barWidth = 32 * this.getBarPercentage();
-      return (
-        <Rect
-          key={Math.random()}
-          x={
-            paddingRight +
-            (i * (width - paddingRight)) / data.length +
-            barWidth / 2
-          }
-          y={(baseHeight - barHeight) * verticalLabelsHeight + paddingTop}
-          width={barWidth}
-          height={2}
-          fill={this.props.chartConfig.color(0.6)}
-        />
-      );
-    });
+    // const baseHeight = this.calcBaseHeight(data, height);
+    // return data.map((x, i) => {
+    //     const barHeight = this.calcHeight(x, data, height);
+    //     const barWidth = 32 * this.getBarPercentage();
+    //     return (
+    //         <Rect
+    //             key={Math.random()}
+    //             x={
+    //                 paddingRight +
+    //                 (i * (width - paddingRight)) / data.length +
+    //                 barWidth / 2
+    //             }
+    //             y={
+    //                 (baseHeight - barHeight) *
+    //                 (verticalLabelsHeightPercentage ||
+    //                     DEFAULT_X_LABELS_HEIGHT_PERCENTAGE) +
+    //                 paddingTop
+    //             }
+    //             width={barWidth}
+    //             height={2}
+    //             fill={this.props.chartConfig.color(0.6)}
+    //         />
+    //     );
+    // });
   };
-
   renderColors = ({
     data,
     flatColor
@@ -196,7 +197,6 @@ class BarChart extends BaseChart<BarChartRefProps, BarChartState> {
         {dataset.colors?.map((color, colorIndex) => {
           const highOpacityColor = color(1.0);
           const lowOpacityColor = color(0.1);
-
           return (
             <LinearGradient
               id={`customColor_${index}_${colorIndex}`}
@@ -218,22 +218,26 @@ class BarChart extends BaseChart<BarChartRefProps, BarChartState> {
       </Defs>
     ));
   };
-
   renderValuesOnTopOfBars = ({
     data,
     width,
     height,
     paddingTop,
     paddingRight,
-    verticalLabelsHeight = DEFAULT_X_LABELS_HEIGHT
+    horizontalLabelsWidth = DEFAULT_Y_LABELS_WIDTH,
+    verticalOffset = 0
   }: Pick<
     Omit<AbstractChartConfig, "data">,
-    "width" | "height" | "paddingRight" | "paddingTop" | "verticalLabelsHeight"
+    | "width"
+    | "height"
+    | "paddingRight"
+    | "paddingTop"
+    | "horizontalLabelsWidth"
+    | "verticalOffset"
   > & {
     data: number[];
   }) => {
-    height = height - verticalLabelsHeight;
-    const baseHeight = this.calcBaseHeight(data, height);
+    const fontSize = 12;
 
     const renderLabel = (value: number) => {
       if (this.props.chartConfig.formatTopBarValue) {
@@ -242,34 +246,34 @@ class BarChart extends BaseChart<BarChartRefProps, BarChartState> {
         return value;
       }
     };
+
+    width = width - horizontalLabelsWidth;
+
+    const baseWidth = horizontalLabelsWidth;
     return data.map((x, i) => {
-      const barHeight = this.calcHeight(x, data, height);
-      const barWidth = 32 * this.getBarPercentage();
+      const barWidth = this.calcHeight(x, data, width);
+      const barHeight = 32 * this.getBarPercentage();
+      const cy =
+        paddingTop + (i * (height - paddingTop)) / data.length + barHeight / 2;
+      const cx = baseWidth;
       return (
         <Text
           key={Math.random()}
-          x={
-            paddingRight +
-            (i * (width - paddingRight)) / data.length +
-            barWidth / 1
-          }
-          y={baseHeight - barHeight + paddingTop - 2}
+          x={cx + barWidth + 2}
+          y={cy + verticalOffset + fontSize / 2}
           fill={this.props.chartConfig.color(0.6)}
-          fontSize="12"
-          textAnchor="middle"
+          fontSize={fontSize}
+          textAnchor="start"
         >
           {renderLabel(data[i])}
         </Text>
       );
     });
   };
-
   render() {
     const {
-      width,
       height,
       data,
-      yLabelsWidth = 64,
       style = {},
       withHorizontalLabels = true,
       withVerticalLabels = true,
@@ -286,19 +290,25 @@ class BarChart extends BaseChart<BarChartRefProps, BarChartState> {
       scrollViewProps = {},
       scrollViewRef
     } = this.props;
+    const { paddingTop = 0, paddingRight = 0 } = style;
 
-    const { borderRadius = 0, paddingTop = 16, paddingRight = 0 } = style;
+    // Width
+    const fullWidth = this.props.width || 200;
+    const width = fullWidth - 40; // this is to account for spacing on the right side
+
+    // Height
+    const verticalLabelsHeight =
+      this.props.chartConfig.verticalLabelsHeight || 16;
+    const graphHeight = height - verticalLabelsHeight;
 
     const config = {
       width: width,
-      height,
+      height: graphHeight,
       verticalLabelRotation,
       horizontalLabelRotation,
-      verticalLabelsHeight:
-        this.props.chartConfig.verticalLabelsHeight || DEFAULT_X_LABELS_HEIGHT,
+      verticalLabelsHeight,
+      horizontalLabelsWidth: this.props.chartConfig.horizontalLabelsWidth,
       switchYLabelHeight: this.props.chartConfig.switchYLabelHeight,
-      verticalLabelsHeightPercentage: this.props.chartConfig
-        .verticalLabelsHeight,
       barRadius:
         (this.props.chartConfig && this.props.chartConfig.barRadius) || 0,
       decimalPlaces:
@@ -315,44 +325,20 @@ class BarChart extends BaseChart<BarChartRefProps, BarChartState> {
         }
     };
 
+    const graphContainerHeight = ((style && style.height) || 220) as number;
+
     return (
-      <View style={[style, { flexDirection: "row" }]}>
-        <View>
-          <Svg height={height} width={yLabelsWidth}>
-            {this.renderDefs({
-              ...config,
-              ...this.props.chartConfig
-            })}
-            <Rect
-              width="100%"
-              height={height}
-              fill={
-                this.props.chartConfig.backgroundColor
-                  ? this.props.chartConfig.backgroundColor
-                  : "url(#backgroundGradient)"
-              }
-            />
-            <G>
-              {withHorizontalLabels
-                ? this.renderHorizontalLabels({
-                    ...config,
-                    count: segments,
-                    data: data.datasets[0].data,
-                    width: yLabelsWidth,
-                    paddingTop: paddingTop as number,
-                    paddingRight: yLabelsWidth as number
-                  })
-                : null}
-            </G>
-          </Svg>
-        </View>
+      <View style={[style, { height: graphContainerHeight }]}>
         <Animated.ScrollView
           ref={scrollViewRef}
-          horizontal={true}
+          horizontal={false}
           bounces={false}
+          nestedScrollEnabled={true}
+          style={{ height: graphContainerHeight - verticalLabelsHeight }}
+          showsVerticalScrollIndicator={false}
           {...scrollViewProps}
         >
-          <Svg height={height} width={width}>
+          <Svg height={graphHeight} width={fullWidth}>
             {this.renderDefs({
               ...config,
               ...this.props.chartConfig
@@ -362,11 +348,10 @@ class BarChart extends BaseChart<BarChartRefProps, BarChartState> {
               flatColor: flatColor,
               data: this.props.data.datasets
             })}
+
             <Rect
               width="100%"
-              height={height}
-              // rx={borderRadius}
-              // ry={borderRadius}
+              height={graphHeight}
               fill={
                 this.props.chartConfig.backgroundColor
                   ? this.props.chartConfig.backgroundColor
@@ -375,7 +360,7 @@ class BarChart extends BaseChart<BarChartRefProps, BarChartState> {
             />
             <G>
               {withInnerLines
-                ? this.renderHorizontalLines({
+                ? this.renderVerticalLines({
                     ...config,
                     count: segments,
                     paddingTop,
@@ -384,14 +369,14 @@ class BarChart extends BaseChart<BarChartRefProps, BarChartState> {
                 : null}
             </G>
             <G>
-              {withVerticalLabels
-                ? this.renderVerticalLabels({
+              {withHorizontalLabels
+                ? this.renderHorizontalLabels({
                     ...config,
                     onPress: onBarPress,
                     labels: data.labels,
                     paddingRight: paddingRight as number,
                     paddingTop: paddingTop as number,
-                    horizontalOffset: barWidth * this.getBarPercentage()
+                    verticalOffset: barWidth * this.getBarPercentage()
                   })
                 : null}
             </G>
@@ -411,36 +396,34 @@ class BarChart extends BaseChart<BarChartRefProps, BarChartState> {
                   ...config,
                   data: data.datasets[0].data,
                   paddingTop: paddingTop as number,
-                  paddingRight: paddingRight as number
-                })}
-            </G>
-            <G>
-              {showBarTops &&
-                this.renderBarTops({
-                  ...config,
-                  data: data.datasets[0].data,
-                  paddingTop: paddingTop as number,
-                  paddingRight: paddingRight as number
-                })}
-            </G>
-            <G>
-              {decorator &&
-                decorator({
-                  ...config,
-                  data: data.datasets[0].data,
-                  paddingTop,
-                  paddingRight
+                  paddingRight: paddingRight as number,
+                  verticalOffset: (barWidth * this.getBarPercentage()) / 2
                 })}
             </G>
           </Svg>
         </Animated.ScrollView>
+        <View style={{ height: config.verticalLabelsHeight }}>
+          <Svg width={fullWidth} height={config.verticalLabelsHeight}>
+            <G>
+              {withVerticalLabels
+                ? this.renderVerticalLabels({
+                    ...config,
+                    count: segments,
+                    data: data.datasets[0].data,
+                    paddingTop: paddingTop as number
+                    // paddingRight: config.horizontalLabelsWidth as number
+                  })
+                : null}
+            </G>
+          </Svg>
+        </View>
       </View>
     );
   }
 }
 
 export default React.forwardRef(
-  (props: BarChartProps, ref: RefObject<Animated.ScrollView>) => (
-    <BarChart scrollViewRef={ref} {...props} />
+  (props: HorizontalBarChartProps, ref: RefObject<Animated.ScrollView>) => (
+    <HorizontalBarChart scrollViewRef={ref} {...props} />
   )
 );

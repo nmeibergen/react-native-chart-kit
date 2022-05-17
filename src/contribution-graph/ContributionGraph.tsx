@@ -3,7 +3,7 @@ import React from "react";
 import { View } from "react-native";
 import { G, Rect, RectProps, Svg, Text } from "react-native-svg";
 
-import AbstractChart from "../AbstractChart";
+import { BaseChart } from "../AbstractChart";
 import { mapValue } from "../Utils";
 import {
   convertToDate,
@@ -32,7 +32,7 @@ export type TooltipDataAttrs = (
   value: ContributionChartValue
 ) => Partial<RectProps> | Partial<RectProps>;
 
-class ContributionGraph extends AbstractChart<
+class ContributionGraph extends BaseChart<
   ContributionGraphProps,
   ContributionGraphState
 > {
@@ -166,7 +166,9 @@ class ContributionGraph extends AbstractChart<
         if (count) {
           const opacity = mapValue(
             count,
-            this.state.maxValue === this.state.minValue ? 0: this.state.minValue,
+            this.state.maxValue === this.state.minValue
+              ? 0
+              : this.state.minValue,
             isNaN(this.state.maxValue) ? 1 : this.state.maxValue,
             0.15 + 0.05, // + 0.05 to make smaller values a bit more visible
             1
