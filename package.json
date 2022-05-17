@@ -55,7 +55,7 @@
     "lodash": "^4.17.13",
     "paths-js": "^0.4.10",
     "point-in-polygon": "^1.0.1",
-    "react-native-reanimated": "^2.4.1"
+    "react-native-reanimated": "^2.3.1"
   },
   "husky": {
     "hooks": {
