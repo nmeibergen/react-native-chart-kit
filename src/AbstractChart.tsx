@@ -689,7 +689,7 @@ export class InvertedChart<
         ? label[0]
         : label) as string;
       return (
-        <G>
+        <G key={Math.random()}>
           <Rect
             x={x - 50}
             width={50}

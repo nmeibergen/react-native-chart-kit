@@ -539,7 +539,7 @@ export const useBaseChart = (props: AbstractChartProps & any) => {
           label: string;
           suffix?: string;
         }) => (
-          <G>
+          <G key={Math.random()}>
             <Rect
               x={x - 10}
               width={20}
