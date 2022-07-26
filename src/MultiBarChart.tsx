@@ -3,13 +3,8 @@ import { ScrollViewProps, View, ViewStyle } from "react-native";
 import { G, Rect, Svg, Text } from "react-native-svg";
 import Animated, { AnimateProps } from "react-native-reanimated";
 
-import {
-  BaseChart,
-  AbstractChartConfig,
-  AbstractChartProps,
-  DEFAULT_X_LABELS_HEIGHT
-} from "./AbstractChart";
-import { useBaseChart } from "./AbstractHooks";
+import { AbstractChartConfig, AbstractChartProps } from "./AbstractHooks";
+import { BAR_WIDTH, useBaseChart } from "./AbstractHooks";
 import { useDidMountEffect } from "./hooks";
 
 export interface StackedBarChartData {
@@ -19,7 +14,7 @@ export interface StackedBarChartData {
   barColors: string[];
 }
 
-export interface StackedBarChartProps extends AbstractChartProps {
+export interface MultiBarChartProps extends AbstractChartProps {
   /**
    * E.g.
    * ```javascript
@@ -72,11 +67,18 @@ export interface StackedBarChartProps extends AbstractChartProps {
 }
 
 export default React.forwardRef(
-  (props: StackedBarChartProps, ref: RefObject<Animated.ScrollView>) => {
+  (props: MultiBarChartProps, ref: RefObject<Animated.ScrollView>) => {
     const baseChart = useBaseChart(props);
     const spaceBetweenItems = props.spaceBetweenItems
       ? props.spaceBetweenItems
       : 3;
+    const baseBarWidth = useMemo(
+      () => props.chartConfig.barWidth || BAR_WIDTH,
+      []
+    );
+    const barPercentage = useMemo(() => props.chartConfig.barPercentage || 1, [
+      props.chartConfig
+    ]);
 
     const [highlightIndex, setHighlightIndex] = useState<number | undefined>(
       props.highlightedIndex
@@ -119,10 +121,10 @@ export default React.forwardRef(
       border: number;
       colors: string[];
       data: number[][];
-      onBarPress: StackedBarChartProps["onBarPress"];
+      onBarPress: MultiBarChartProps["onBarPress"];
     }) =>
       data.map((x, i) => {
-        const barWidth = 32 * getBarPercentage();
+        const barWidth = baseBarWidth * barPercentage;
         const ret = [];
         let h = 0;
 
@@ -229,7 +231,7 @@ export default React.forwardRef(
       });
 
     const paddingTop = 15;
-    const barWidth = 32 * getBarPercentage();
+    const barWidth = baseBarWidth * barPercentage;
 
     const {
       width,

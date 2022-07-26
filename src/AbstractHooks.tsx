@@ -37,6 +37,7 @@ export interface AbstractChartConfig extends ChartConfig {
   paddingTop?: number;
   paddingRight?: number;
   horizontalLabelRotation?: number;
+  barWidth?: number;
   formatYLabel?: (yLabel: string) => string;
   labels?: (string | string[])[];
   horizontalOffset?: number;
@@ -55,6 +56,7 @@ export type AbstractChartState = {};
 
 export const DEFAULT_X_LABELS_HEIGHT = 20; // percentage from top
 export const DEFAULT_Y_LABELS_WIDTH = 64; // percentage from left
+export const BAR_WIDTH = 32;
 
 export const useAbstractChart = (props: AbstractChartProps & any) => {
   const calcScaler = useCallback(

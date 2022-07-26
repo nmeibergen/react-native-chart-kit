@@ -60,7 +60,6 @@ export interface BarChartProps extends AbstractChartProps {
   }) => void;
   yLabelsWidth?: number;
   scrollViewProps?: AnimateProps<ScrollViewProps>;
-
   segments?: number;
   showBarTops?: boolean;
   showValuesOnTopOfBars?: boolean;

@@ -23,12 +23,11 @@ import {
   useBaseChart,
   AbstractChartConfig,
   AbstractChartProps,
-  DEFAULT_X_LABELS_HEIGHT
+  DEFAULT_X_LABELS_HEIGHT,
+  BAR_WIDTH
 } from "./AbstractHooks";
 import { ChartData } from "./HelperTypes";
 import { useDidMountEffect } from "./hooks";
-
-const barWidth = 32;
 
 export interface BarChartProps extends AbstractChartProps {
   data: ChartData;
@@ -91,10 +90,13 @@ export default React.forwardRef(
       setHighlightIndex(props.highlightedIndex);
     }, [props.highlightedIndex]);
 
-    const getBarPercentage = useCallback(() => {
-      const { barPercentage = 1 } = props.chartConfig;
-      return barPercentage;
-    }, [props.chartConfig]);
+    const baseBarWidth = useMemo(
+      () => props.chartConfig.barWidth || BAR_WIDTH,
+      []
+    );
+    const barPercentage = useMemo(() => props.chartConfig.barPercentage || 1, [
+      props.chartConfig
+    ]);
 
     const renderBars = useCallback(
       ({
@@ -123,7 +125,7 @@ export default React.forwardRef(
 
         return data.map((x, i) => {
           const barHeight = baseChart.calcHeight(x, data, height);
-          const barWidth = 32 * getBarPercentage();
+          const barWidth = baseBarWidth * barPercentage;
 
           const cx =
             paddingRight +
@@ -168,7 +170,7 @@ export default React.forwardRef(
       [
         baseChart.calcBaseHeight,
         baseChart.calcHeight,
-        getBarPercentage,
+        barPercentage,
         props.onBarPress
       ]
     );
@@ -195,7 +197,7 @@ export default React.forwardRef(
 
         return data.map((x, i) => {
           const barHeight = baseChart.calcHeight(x, data, height);
-          const barWidth = 32 * getBarPercentage();
+          const barWidth = baseBarWidth * barPercentage;
           return (
             <Rect
               key={Math.random()}
@@ -212,7 +214,7 @@ export default React.forwardRef(
           );
         });
       },
-      [baseChart.calcBaseHeight, baseChart.calcHeight]
+      [baseChart.calcBaseHeight, baseChart.calcHeight, barPercentage]
     );
 
     const renderColors = useCallback(
@@ -294,7 +296,7 @@ export default React.forwardRef(
         };
         return data.map((x, i) => {
           const barHeight = baseChart.calcHeight(x, data, height);
-          const barWidth = 32 * getBarPercentage();
+          const barWidth = baseBarWidth * barPercentage;
           return (
             <Text
               key={Math.random()}
@@ -313,7 +315,7 @@ export default React.forwardRef(
           );
         });
       },
-      [baseChart.calcBaseHeight, baseChart.calcHeight, getBarPercentage]
+      [baseChart.calcBaseHeight, baseChart.calcHeight, barPercentage]
     );
 
     const {
@@ -431,7 +433,7 @@ export default React.forwardRef(
               labels: data.labels,
               paddingRight: paddingRight as number,
               paddingTop: paddingTop as number,
-              horizontalOffset: barWidth * getBarPercentage()
+              horizontalOffset: baseBarWidth * barPercentage
             })
           : null,
       [
@@ -442,8 +444,8 @@ export default React.forwardRef(
         data.labels,
         paddingRight,
         paddingTop,
-        barWidth,
-        getBarPercentage
+        baseBarWidth,
+        barPercentage
       ]
     );
 
