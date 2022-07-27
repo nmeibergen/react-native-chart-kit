@@ -403,8 +403,8 @@ export default React.forwardRef(
       <View style={[style, { flexDirection: "row" }]}>
         <View>
           <Svg height={height} width={yLabelsWidth}>
-            {defs}
-            {rect}
+            {/* {defs}
+            {rect} */}
             <G>{horizontalLabels}</G>
           </Svg>
         </View>
@@ -414,7 +414,8 @@ export default React.forwardRef(
           bounces={false}
           {...scrollViewProps}
         >
-          <Svg height={height} width={width}>
+          {/* WE SET ONPRESS BECAUSE THAT ALLOWS THE SVG TO BE DRAGGLE INSIDE THE SCROLLVIEW */}
+          <Svg height={height} width={width} onPress={() => {}}>
             {defs}
             <G>{horizontalLines}</G>
             <G>{verticalLabels}</G>

@@ -338,7 +338,8 @@ export class HorizontalBarChart extends InvertedChart<
           showsVerticalScrollIndicator={false}
           {...scrollViewProps}
         >
-          <Svg height={graphHeight} width={fullWidth}>
+          {/* WE SET ONPRESS BECAUSE THAT ALLOWS THE SVG TO BE DRAGGLE INSIDE THE SCROLLVIEW */}
+          <Svg height={graphHeight} width={fullWidth} onPress={() => {}}>
             {this.renderDefs({
               ...config,
               ...this.props.chartConfig
