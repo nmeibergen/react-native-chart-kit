@@ -92,10 +92,10 @@ export default React.forwardRef(
 
     const baseBarWidth = useMemo(
       () => props.chartConfig.barWidth || BAR_WIDTH,
-      []
+      [props.chartConfig.barWidth]
     );
     const barPercentage = useMemo(() => props.chartConfig.barPercentage || 1, [
-      props.chartConfig
+      props.chartConfig.barPercentage
     ]);
 
     const renderBars = useCallback(
@@ -214,7 +214,12 @@ export default React.forwardRef(
           );
         });
       },
-      [baseChart.calcBaseHeight, baseChart.calcHeight, barPercentage]
+      [
+        baseChart.calcBaseHeight,
+        baseChart.calcHeight,
+        barPercentage,
+        baseBarWidth
+      ]
     );
 
     const renderColors = useCallback(
@@ -315,7 +320,12 @@ export default React.forwardRef(
           );
         });
       },
-      [baseChart.calcBaseHeight, baseChart.calcHeight, barPercentage]
+      [
+        baseChart.calcBaseHeight,
+        baseChart.calcHeight,
+        barPercentage,
+        baseBarWidth
+      ]
     );
 
     const {

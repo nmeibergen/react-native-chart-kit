@@ -74,10 +74,10 @@ export default React.forwardRef(
       : 3;
     const baseBarWidth = useMemo(
       () => props.chartConfig.barWidth || BAR_WIDTH,
-      []
+      [props.chartConfig.barWidth]
     );
     const barPercentage = useMemo(() => props.chartConfig.barPercentage || 1, [
-      props.chartConfig
+      props.chartConfig.barPercentage
     ]);
 
     const [highlightIndex, setHighlightIndex] = useState<number | undefined>(
@@ -87,11 +87,6 @@ export default React.forwardRef(
     useDidMountEffect(() => {
       setHighlightIndex(props.highlightedIndex);
     }, [props.highlightedIndex]);
-
-    const getBarPercentage = () => {
-      const { barPercentage = 1 } = props.chartConfig;
-      return barPercentage;
-    };
 
     const getBarRadius = (ret: string | any[], x: string | any[]) => {
       return props.chartConfig.barRadius && ret.length === x.length - 1
@@ -382,6 +377,8 @@ export default React.forwardRef(
       [
         config,
         data.data,
+        barWidth,
+        barPercentage,
         border,
         props.data.barColors,
         paddingTop,
