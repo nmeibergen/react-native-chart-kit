@@ -293,8 +293,9 @@ export class HorizontalBarChart extends InvertedChart<
     const { paddingTop = 0, paddingRight = 0 } = style;
 
     // Width
-    const fullWidth = this.props.width || 200;
-    const width = fullWidth - 40; // this is to account for spacing on the right side
+    const fullWidth =
+      (this.props.width || 200) + this.props.chartConfig.horizontalLabelsWidth;
+    const width = fullWidth - 40; // this is to account for spacing on the right side in order to see values on top of charts and last vertical label
 
     // Height
     const verticalLabelsHeight =
