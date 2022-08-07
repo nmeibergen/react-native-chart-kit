@@ -237,7 +237,6 @@ export default React.forwardRef(
       withHorizontalLabels = true,
       withVerticalLabels = true,
       segments = 4,
-      decimalPlaces,
       percentile = false,
       formatYLabel = (yLabel: string) => {
         return yLabel;
@@ -255,7 +254,7 @@ export default React.forwardRef(
       width,
       paddingRight: horizontalPadding,
       height,
-      verticalLabelsHeight: props.chartConfig.verticalLabelsHeight
+      ...props.chartConfig
     };
 
     let border = 0;
@@ -295,7 +294,6 @@ export default React.forwardRef(
               data: [0, border],
               paddingTop,
               paddingRight: yLabelsWidth as number,
-              decimalPlaces,
               formatYLabel
             })
           : null,
@@ -306,7 +304,6 @@ export default React.forwardRef(
         border,
         paddingTop,
         yLabelsWidth,
-        decimalPlaces,
         formatYLabel
       ]
     );
