@@ -286,7 +286,7 @@ class BarChart extends BaseChart<BarChartRefProps, BarChartState> {
       scrollViewRef
     } = this.props;
 
-    const { borderRadius = 0, paddingTop = 16, paddingRight = 0 } = style;
+    const { paddingTop = 16, paddingRight = 0 } = style;
 
     const config = {
       width: width,
