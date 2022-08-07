@@ -437,9 +437,6 @@ export const useBaseChart = (props: AbstractChartProps & any) => {
           )}${yAxisSuffix}`;
         }
 
-        console.log(yLabel);
-        console.log({ decimalPlaces });
-
         const basePosition = height - verticalLabelsHeight;
         const x = yLabelsOffset;
         const y =
