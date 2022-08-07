@@ -438,7 +438,7 @@ export const useBaseChart = (props: AbstractChartProps & any) => {
         }
 
         const basePosition = height - verticalLabelsHeight;
-        const x = paddingRight - yLabelsOffset;
+        const x = yLabelsOffset;
         const y =
           count === 1 && props.fromZero
             ? paddingTop + 4
@@ -507,6 +507,7 @@ export const useBaseChart = (props: AbstractChartProps & any) => {
         xLabelsOffset = 0,
         hidePointsAtIndex = []
       } = props;
+      width = width - paddingRight;
 
       const fontSize = 12;
 
@@ -523,10 +524,7 @@ export const useBaseChart = (props: AbstractChartProps & any) => {
         const graphBottom = height - verticalLabelsHeight + paddingTop;
 
         const x =
-          (((width - paddingRight) / labels.length) * i +
-            paddingRight +
-            horizontalOffset) *
-          fac;
+          paddingRight + ((width / labels.length) * i + horizontalOffset) * fac;
 
         const y = graphBottom + (fontSize * 3) / 2 + xLabelsOffset;
 

@@ -122,16 +122,18 @@ export default React.forwardRef(
       }) => {
         height = height - verticalLabelsHeight;
         const baseHeight = baseChart.calcBaseHeight(data, height);
+        width = width - paddingRight;
 
         return data.map((x, i) => {
           const barHeight = baseChart.calcHeight(x, data, height);
           const barWidth = baseBarWidth * barPercentage;
 
-          const cx =
-            paddingRight +
-            (i * (width - paddingRight)) / data.length +
-            barWidth / 2;
+          const cx = paddingRight + (i * width) / data.length + barWidth / 2;
           const cy =
+            (barHeight > 0 ? baseHeight - barHeight : baseHeight) + paddingTop;
+
+          const leftX = paddingRight + (i * width) / data.length;
+          const topY =
             (barHeight > 0 ? baseHeight - barHeight : baseHeight) + paddingTop;
 
           const onPress = () => {
@@ -152,8 +154,8 @@ export default React.forwardRef(
           return (
             <Rect
               key={Math.random()}
-              x={cx}
-              y={cy}
+              x={leftX}
+              y={topY}
               rx={barRadius}
               width={barWidth}
               height={Math.abs(barHeight)}
@@ -194,6 +196,7 @@ export default React.forwardRef(
         data: number[];
       }) => {
         const baseHeight = baseChart.calcBaseHeight(data, height);
+        width = width - paddingRight;
 
         return data.map((x, i) => {
           const barHeight = baseChart.calcHeight(x, data, height);
@@ -201,11 +204,7 @@ export default React.forwardRef(
           return (
             <Rect
               key={Math.random()}
-              x={
-                paddingRight +
-                (i * (width - paddingRight)) / data.length +
-                barWidth / 2
-              }
+              x={paddingRight + (i * width) / data.length}
               y={(baseHeight - barHeight) * verticalLabelsHeight + paddingTop}
               width={barWidth}
               height={2}
@@ -290,6 +289,7 @@ export default React.forwardRef(
         data: number[];
       }) => {
         height = height - verticalLabelsHeight;
+        width = width - paddingRight;
         const baseHeight = baseChart.calcBaseHeight(data, height);
 
         const renderLabel = (value: number) => {
@@ -305,11 +305,7 @@ export default React.forwardRef(
           return (
             <Text
               key={Math.random()}
-              x={
-                paddingRight +
-                (i * (width - paddingRight)) / data.length +
-                barWidth / 1
-              }
+              x={paddingRight + (i * width) / data.length + barWidth / 2}
               y={baseHeight - barHeight + paddingTop - 2}
               fill={props.chartConfig.color(0.6)}
               fontSize="12"
@@ -349,10 +345,15 @@ export default React.forwardRef(
       scrollViewProps = {}
     } = props;
 
-    const { paddingTop = 16, paddingRight = 0 } = style;
+    const { paddingTop = 16 } = style;
+
+    const dataLength = data.datasets[0].data.length;
+    const totalEmptySpace = width - baseBarWidth * barPercentage * dataLength;
+    const horizontalPadding = totalEmptySpace / (dataLength + 1);
 
     const config = {
       width: width,
+      paddingRight: horizontalPadding,
       height,
       verticalLabelRotation,
       horizontalLabelRotation,
@@ -415,8 +416,7 @@ export default React.forwardRef(
           ? baseChart.renderHorizontalLines({
               ...config,
               count: segments,
-              paddingTop,
-              paddingRight
+              paddingTop
             })
           : null,
       [
@@ -424,7 +424,6 @@ export default React.forwardRef(
         baseChart.renderHorizontalLines,
         config,
         segments,
-        paddingRight,
         paddingTop
       ]
     );
@@ -441,9 +440,8 @@ export default React.forwardRef(
                 onBarPress({ index });
               },
               labels: data.labels,
-              paddingRight: paddingRight as number,
               paddingTop: paddingTop as number,
-              horizontalOffset: baseBarWidth * barPercentage
+              horizontalOffset: (baseBarWidth * barPercentage) / 2
             })
           : null,
       [
@@ -452,7 +450,6 @@ export default React.forwardRef(
         baseChart.renderVerticalLabels,
         onBarPress,
         data.labels,
-        paddingRight,
         paddingTop,
         baseBarWidth,
         barPercentage
@@ -465,16 +462,9 @@ export default React.forwardRef(
           ...config,
           data: data.datasets[0].data,
           paddingTop: paddingTop as number,
-          paddingRight: paddingRight as number,
           withCustomBarColorFromData: withCustomBarColorFromData
         }),
-      [
-        config,
-        data.datasets[0],
-        paddingTop,
-        paddingRight,
-        withCustomBarColorFromData
-      ]
+      [config, data.datasets[0], paddingTop, withCustomBarColorFromData]
     );
 
     const valuesOnBars = useMemo(
@@ -483,10 +473,9 @@ export default React.forwardRef(
         renderValuesOnTopOfBars({
           ...config,
           data: data.datasets[0].data,
-          paddingTop: paddingTop as number,
-          paddingRight: paddingRight as number
+          paddingTop: paddingTop as number
         }),
-      [config, data.datasets[0], paddingTop, paddingRight]
+      [config, data.datasets[0], paddingTop]
     );
 
     const barTops = useMemo(
@@ -495,10 +484,9 @@ export default React.forwardRef(
         renderBarTops({
           ...config,
           data: data.datasets[0].data,
-          paddingTop: paddingTop as number,
-          paddingRight: paddingRight as number
+          paddingTop: paddingTop as number
         }),
-      [config, data.datasets[0], paddingTop, paddingRight]
+      [config, data.datasets[0], paddingTop]
     );
 
     const decoration = useMemo(
@@ -507,10 +495,9 @@ export default React.forwardRef(
         decorator({
           ...config,
           data: data.datasets[0].data,
-          paddingTop,
-          paddingRight
+          paddingTop
         }),
-      [config, data.datasets[0], paddingTop, paddingRight]
+      [config, data.datasets[0], paddingTop]
     );
 
     const horizontalLabels = useMemo(
@@ -521,8 +508,7 @@ export default React.forwardRef(
               count: segments,
               data: data.datasets[0].data,
               width: yLabelsWidth,
-              paddingTop: paddingTop as number,
-              paddingRight: yLabelsWidth as number
+              paddingTop: paddingTop as number
             })
           : null,
       [
@@ -535,6 +521,8 @@ export default React.forwardRef(
         yLabelsWidth
       ]
     );
+
+    // determine same spacing on the right side of the chart
 
     return (
       <View style={[style, { flexDirection: "row" }]}>
