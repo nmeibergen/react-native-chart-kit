@@ -247,9 +247,13 @@ export default React.forwardRef(
       hideLegend = false
     } = props;
 
-    const { paddingRight = barWidth } = style;
+    const dataLength = data.data.length;
+    const totalEmptySpace = width - baseBarWidth * barPercentage * dataLength;
+    const horizontalPadding = totalEmptySpace / (dataLength + 1);
+
     const config = {
       width,
+      paddingRight: horizontalPadding,
       height,
       verticalLabelsHeight: props.chartConfig.verticalLabelsHeight
     };
@@ -280,21 +284,6 @@ export default React.forwardRef(
           ...props.chartConfig
         }),
       [config, props.chartConfig]
-    );
-
-    const rect = useMemo(
-      () => (
-        <Rect
-          width="100%"
-          height={height}
-          fill={
-            props.chartConfig.backgroundColor
-              ? props.chartConfig.backgroundColor
-              : "url(#backgroundGradient)"
-          }
-        />
-      ),
-      [props.chartConfig.backgroundColor]
     );
 
     const horizontalLabels = useMemo(
@@ -344,7 +333,6 @@ export default React.forwardRef(
               },
               highlightIndex: highlightIndex,
               labels: data.labels,
-              paddingRight: paddingRight as number,
               stackedBar,
               paddingTop,
               horizontalOffset: barWidth
@@ -355,7 +343,6 @@ export default React.forwardRef(
         highlightIndex,
         config,
         data.labels,
-        paddingRight,
         stackedBar,
         paddingTop,
         barWidth
@@ -370,7 +357,6 @@ export default React.forwardRef(
           border,
           colors: props.data.barColors,
           paddingTop,
-          paddingRight: paddingRight as number,
           stackedBar,
           onBarPress: onBarPress
         }),
@@ -382,7 +368,6 @@ export default React.forwardRef(
         border,
         props.data.barColors,
         paddingTop,
-        paddingRight,
         stackedBar,
         onBarPress
       ]
