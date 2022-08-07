@@ -419,7 +419,7 @@ export const useBaseChart = (props: AbstractChartProps & any) => {
         verticalLabelsHeight = DEFAULT_X_LABELS_HEIGHT
       } = config;
 
-      const { yAxisLabel = "", yAxisSuffix = "", yLabelsOffset = 12 } = props;
+      const { yAxisLabel = "", yAxisSuffix = "", yLabelsOffset = 0 } = props;
       return new Array(count === 1 ? 1 : count + 1).fill(1).map((_, i) => {
         let yLabel = String(i * count);
 
@@ -437,6 +437,8 @@ export const useBaseChart = (props: AbstractChartProps & any) => {
           )}${yAxisSuffix}`;
         }
 
+        console.log({ yLabel });
+
         const basePosition = height - verticalLabelsHeight;
         const x = yLabelsOffset;
         const y =
@@ -450,10 +452,10 @@ export const useBaseChart = (props: AbstractChartProps & any) => {
         return (
           <Text
             rotation={horizontalLabelRotation}
-            origin={`${x}, ${y}`}
+            // origin={`${x}, ${y}`}
             key={Math.random()}
             x={x}
-            textAnchor="end"
+            textAnchor="start"
             y={y}
             {...abstractChart.getPropsForLabels()}
             {...abstractChart.getPropsForHorizontalLabels()}
