@@ -121,11 +121,11 @@ export default React.forwardRef(
         withCustomBarColorFromData: boolean;
       }) => {
         height = height - verticalLabelsHeight;
-        const baseHeight = baseChart.calcBaseHeight(data, height);
+        const baseHeight = baseChart.calcBaseHeight(height);
         width = width - paddingRight;
 
         return data.map((x, i) => {
-          const barHeight = baseChart.calcHeight(x, data, height);
+          const barHeight = baseChart.calcHeight(x, height);
           const barWidth = baseBarWidth * barPercentage;
 
           const cx = paddingRight + (i * width) / data.length + barWidth / 2;
@@ -195,11 +195,11 @@ export default React.forwardRef(
       > & {
         data: number[];
       }) => {
-        const baseHeight = baseChart.calcBaseHeight(data, height);
+        const baseHeight = baseChart.calcBaseHeight(height);
         width = width - paddingRight;
 
         return data.map((x, i) => {
-          const barHeight = baseChart.calcHeight(x, data, height);
+          const barHeight = baseChart.calcHeight(x, height);
           const barWidth = baseBarWidth * barPercentage;
           return (
             <Rect
@@ -290,7 +290,7 @@ export default React.forwardRef(
       }) => {
         height = height - verticalLabelsHeight;
         width = width - paddingRight;
-        const baseHeight = baseChart.calcBaseHeight(data, height);
+        const baseHeight = baseChart.calcBaseHeight(height);
 
         const renderLabel = (value: number) => {
           if (props.chartConfig.formatTopBarValue) {
@@ -300,7 +300,7 @@ export default React.forwardRef(
           }
         };
         return data.map((x, i) => {
-          const barHeight = baseChart.calcHeight(x, data, height);
+          const barHeight = baseChart.calcHeight(x, height);
           const barWidth = baseBarWidth * barPercentage;
           return (
             <Text
@@ -316,12 +316,7 @@ export default React.forwardRef(
           );
         });
       },
-      [
-        baseChart.calcBaseHeight,
-        baseChart.calcHeight,
-        barPercentage,
-        baseBarWidth
-      ]
+      [baseChart.calcBaseHeight, barPercentage, baseBarWidth]
     );
 
     const {

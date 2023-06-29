@@ -1,4 +1,4 @@
-import React, { Component, useCallback } from "react";
+import React, { Component, useCallback, useMemo } from "react";
 import {
   Defs,
   G,
@@ -59,7 +59,7 @@ export const DEFAULT_Y_LABELS_WIDTH = 64; // percentage from left
 export const BAR_WIDTH = 32;
 
 export const useAbstractChart = (props: AbstractChartProps & any) => {
-  const calcScaler = useCallback(
+  const _calcScaler = useCallback(
     (data: number[]) => {
       if (props.fromZero && props.fromNumber) {
         return Math.max(...data, props.fromNumber) - Math.min(...data, 0) || 1;
@@ -77,36 +77,43 @@ export const useAbstractChart = (props: AbstractChartProps & any) => {
     [props.fromNumber, props.fromZero]
   );
 
-  const calcBaseHeight = useCallback((data: number[], height: number) => {
-    const min = Math.min(...data);
-    const max = Math.max(...data);
-    if (min >= 0 && max >= 0) {
-      return height;
-    } else if (min < 0 && max <= 0) {
-      return 0;
-    } else if (min < 0 && max > 0) {
-      return (height * max) / calcScaler(data);
-    }
-  }, []);
+  const data = useMemo(() => props?.data?.datasets[0]?.data, [
+    props?.data?.datasets[0]?.data
+  ]);
 
-  const calcHeight = useCallback(
-    (val: number, data: number[], height: number) => {
-      const max = Math.max(...data);
-      const min = Math.min(...data);
+  const calcedScale = useMemo(() => data && _calcScaler(data), [data]);
 
-      if (min < 0 && max > 0) {
-        return height * (val / calcScaler(data));
-      } else if (min >= 0 && max >= 0) {
-        return props.fromZero
-          ? height * (val / calcScaler(data))
-          : height * ((val - min) / calcScaler(data));
+  const min = useMemo(() => Math.min(...data), [data]);
+  const max = useMemo(() => Math.max(...data), [data]);
+
+  const calcBaseHeight = useCallback(
+    (height: number) => {
+      if (min >= 0 && max >= 0) {
+        return height;
       } else if (min < 0 && max <= 0) {
-        return props.fromZero
-          ? height * (val / calcScaler(data))
-          : height * ((val - max) / calcScaler(data));
+        return 0;
+      } else if (min < 0 && max > 0) {
+        return (height * max) / calcedScale;
       }
     },
-    [props.fromZero]
+    [min, max, calcedScale]
+  );
+
+  const calcHeight = useCallback(
+    (val, height) => {
+      if (min < 0 && max > 0) {
+        return height * (val / calcedScale);
+      } else if (min >= 0 && max >= 0) {
+        return props.fromZero
+          ? height * (val / calcedScale)
+          : height * ((val - min) / calcedScale);
+      } else if (min < 0 && max <= 0) {
+        return props.fromZero
+          ? height * (val / calcedScale)
+          : height * ((val - max) / calcedScale);
+      }
+    },
+    [props.fromZero, min, max, props.fromZero]
   );
 
   const getPropsForBackgroundLines = useCallback(() => {
@@ -335,7 +342,7 @@ export const useAbstractChart = (props: AbstractChartProps & any) => {
   );
 
   return {
-    calcScaler,
+    calcedScale,
     calcBaseHeight,
     calcHeight,
     getPropsForBackgroundLines,
@@ -429,9 +436,8 @@ export const useBaseChart = (props: AbstractChartProps & any) => {
           )}${yAxisSuffix}`;
         } else {
           const label = props.fromZero
-            ? (abstractChart.calcScaler(data) / count) * i +
-              Math.min(...data, 0)
-            : (abstractChart.calcScaler(data) / count) * i + Math.min(...data);
+            ? (abstractChart.calcedScale / count) * i + Math.min(...data, 0)
+            : (abstractChart.calcedScale / count) * i + Math.min(...data);
           yLabel = `${yAxisLabel}${formatYLabel(
             label.toFixed(decimalPlaces)
           )}${yAxisSuffix}`;
@@ -468,7 +474,7 @@ export const useBaseChart = (props: AbstractChartProps & any) => {
       props.yAxisSuffix,
       props.yLabelsOffset,
       props.fromZero,
-      abstractChart.calcScaler,
+      abstractChart.calcedScale,
       abstractChart.getPropsForLabels,
       abstractChart.getPropsForHorizontalLabels
     ]
