@@ -7,26 +7,10 @@ import { AbstractChartConfig, AbstractChartProps } from "./AbstractHooks";
 import { BAR_WIDTH, useBaseChart } from "./AbstractHooks";
 import { useDidMountEffect } from "./hooks";
 
-export interface StackedBarChartData {
+export interface MultiBarChartProps extends AbstractChartProps {
   labels: (string | string[])[];
-  legend: string[];
   data: number[][];
   barColors: string[];
-}
-
-export interface MultiBarChartProps extends AbstractChartProps {
-  /**
-   * E.g.
-   * ```javascript
-   * const data = {
-   *   labels: ["Test1", "Test2"],
-   *   legend: ["L1", "L2", "L3"],
-   *   data: [[60, 60, 60], [30, 30, 60]],
-   *   barColors: ["#dfe4ea", "#ced6e0", "#a4b0be"]
-   * };
-   * ```
-   */
-  data: StackedBarChartData;
   width: number;
   height: number;
   yLabelsWidth: number;
@@ -68,7 +52,7 @@ export interface MultiBarChartProps extends AbstractChartProps {
 
 export default React.forwardRef(
   (props: MultiBarChartProps, ref: RefObject<Animated.ScrollView>) => {
-    const baseChart = useBaseChart(props);
+    const baseChart = useBaseChart({ ...props, data: props.data.flat() });
     const spaceBetweenItems = props.spaceBetweenItems
       ? props.spaceBetweenItems
       : 3;
@@ -149,7 +133,6 @@ export default React.forwardRef(
             (barWidth * x.length) / 2) *
           fac;
         const itemCount = x.length;
-
         for (let z = 0; z < itemCount; z++) {
           h = barsAreaHeight * (x[z] / sum) + 1;
 
@@ -233,6 +216,7 @@ export default React.forwardRef(
       height,
       style = {},
       data,
+      labels,
       yLabelsWidth = 64,
       withHorizontalLabels = true,
       withVerticalLabels = true,
@@ -244,24 +228,27 @@ export default React.forwardRef(
       onBarPress,
       scrollViewProps = {},
       hideLegend = false
-    } = props;
+    } = useMemo(() => props, [props]);
 
-    const dataLength = data.data.length;
+    const dataLength = data.length;
     const totalEmptySpace = width - baseBarWidth * barPercentage * dataLength;
     const horizontalPadding = totalEmptySpace / (dataLength + 1);
 
-    const config = {
-      width,
-      paddingRight: horizontalPadding,
-      height,
-      ...props.chartConfig
-    };
+    const config = useMemo(
+      () => ({
+        width,
+        paddingRight: horizontalPadding,
+        height,
+        ...props.chartConfig
+      }),
+      [props]
+    );
 
     let border = 0;
 
     let max = 0;
-    for (let i = 0; i < data.data.length; i++) {
-      const actual = data.data[i].reduce((pv, cv) => Math.max(pv, cv), 0);
+    for (let i = 0; i < data.length; i++) {
+      const actual = data[i].reduce((pv, cv) => Math.max(pv, cv), 0);
       if (actual > max) {
         max = actual;
       }
@@ -273,8 +260,8 @@ export default React.forwardRef(
       border = max;
     }
 
-    const showLegend = !hideLegend && data.legend && data.legend.length != 0;
-    const stackedBar = showLegend;
+    // const showLegend = !hideLegend && legend && legend.length != 0;
+    // const stackedBar = showLegend;
 
     const defs = useMemo(
       () =>
@@ -291,7 +278,6 @@ export default React.forwardRef(
           ? baseChart.renderHorizontalLabels({
               ...config,
               count: segments,
-              data: [0, border],
               paddingTop,
               paddingRight: yLabelsWidth as number,
               formatYLabel
@@ -329,8 +315,7 @@ export default React.forwardRef(
                 onBarPress({ index });
               },
               highlightIndex: highlightIndex,
-              labels: data.labels,
-              stackedBar,
+              labels: labels,
               paddingTop,
               horizontalOffset: barWidth
             })
@@ -339,47 +324,42 @@ export default React.forwardRef(
         baseChart.renderVerticalLabels,
         highlightIndex,
         config,
-        data.labels,
-        stackedBar,
+        labels,
         paddingTop,
         barWidth
       ]
     );
 
-    const bars = useMemo(
-      () =>
-        renderBars({
-          ...config,
-          data: data.data,
-          border,
-          colors: props.data.barColors,
-          paddingTop,
-          stackedBar,
-          onBarPress: onBarPress
-        }),
-      [
-        config,
-        data.data,
-        barWidth,
-        barPercentage,
+    const bars = useMemo(() => {
+      return renderBars({
+        ...config,
+        data: data,
         border,
-        props.data.barColors,
+        colors: props.barColors,
         paddingTop,
-        stackedBar,
-        onBarPress
-      ]
-    );
+        onBarPress: onBarPress
+      });
+    }, [
+      config,
+      data,
+      barWidth,
+      barPercentage,
+      border,
+      props.barColors,
+      paddingTop,
+      onBarPress
+    ]);
 
-    const legend = useMemo(
-      () =>
-        showLegend &&
-        renderLegend({
-          ...config,
-          legend: data.legend,
-          colors: props.data.barColors
-        }),
-      [config, data.legend, props.data.barColors]
-    );
+    // const legend = useMemo(
+    //   () =>
+    //     showLegend &&
+    //     renderLegend({
+    //       ...config,
+    //       legend: legend,
+    //       colors: props.barColors
+    //     }),
+    //   [config, legend, props.barColors]
+    // );
 
     return (
       <View style={[style, { flexDirection: "row" }]}>
@@ -402,7 +382,7 @@ export default React.forwardRef(
             <G>{horizontalLines}</G>
             <G>{verticalLabels}</G>
             <G>{bars}</G>
-            {legend}
+            {/* {legend} */}
           </Svg>
         </Animated.ScrollView>
       </View>

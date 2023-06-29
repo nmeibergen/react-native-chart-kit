@@ -31,7 +31,7 @@ export interface AbstractChartProps {
 
 export interface AbstractChartConfig extends ChartConfig {
   count?: number;
-  data?: Dataset[];
+  data?: number[];
   width?: number;
   height?: number;
   paddingTop?: number;
@@ -77,14 +77,12 @@ export const useAbstractChart = (props: AbstractChartProps & any) => {
     [props.fromNumber, props.fromZero]
   );
 
-  const data = useMemo(() => props?.data?.datasets[0]?.data, [
-    props?.data?.datasets[0]?.data
-  ]);
+  const data = useMemo(() => props.data ?? [], [props.data]);
 
   const calcedScale = useMemo(() => data && _calcScaler(data), [data]);
 
-  const min = useMemo(() => Math.min(...data), [data]);
-  const max = useMemo(() => Math.max(...data), [data]);
+  const min = useMemo(() => data && Math.min(...data), [data]);
+  const max = useMemo(() => data && Math.max(...data), [data]);
 
   const calcBaseHeight = useCallback(
     (height: number) => {
@@ -208,9 +206,7 @@ export const useAbstractChart = (props: AbstractChartProps & any) => {
         width,
         height,
         backgroundGradientFrom,
-        backgroundGradientTo,
-        useShadowColorFromDataset,
-        data
+        backgroundGradientTo
       } = config;
 
       const fromOpacity = config.hasOwnProperty("backgroundGradientFromOpacity")
@@ -285,56 +281,25 @@ export const useAbstractChart = (props: AbstractChartProps & any) => {
               stopOpacity={toOpacity}
             />
           </LinearGradient>
-          {useShadowColorFromDataset ? (
-            data.map((dataset, index) => (
-              <LinearGradient
-                id={`fillShadowGradientFrom_${index}`}
-                key={`${index}`}
-                x1={0}
-                y1={0}
-                x2={0}
-                y2={height}
-                gradientUnits="userSpaceOnUse"
-              >
-                <Stop
-                  offset={fillShadowGradientFromOffset}
-                  stopColor={
-                    dataset.color ? dataset.color(1.0) : fillShadowGradientFrom
-                  }
-                  stopOpacity={fillShadowGradientFromOpacity}
-                />
-                <Stop
-                  offset={fillShadowGradientToOffset}
-                  stopColor={
-                    dataset.color
-                      ? dataset.color(fillShadowGradientFromOpacity)
-                      : fillShadowGradientFrom
-                  }
-                  stopOpacity={fillShadowGradientToOpacity || 0}
-                />
-              </LinearGradient>
-            ))
-          ) : (
-            <LinearGradient
-              id="fillShadowGradientFrom"
-              x1={0}
-              y1={0}
-              x2={0}
-              y2={height}
-              gradientUnits="userSpaceOnUse"
-            >
-              <Stop
-                offset={fillShadowGradientFromOffset}
-                stopColor={fillShadowGradientFrom}
-                stopOpacity={fillShadowGradientFromOpacity}
-              />
-              <Stop
-                offset={fillShadowGradientToOffset}
-                stopColor={fillShadowGradientTo || fillShadowGradientFrom}
-                stopOpacity={fillShadowGradientToOpacity || 0}
-              />
-            </LinearGradient>
-          )}
+          <LinearGradient
+            id="fillShadowGradientFrom"
+            x1={0}
+            y1={0}
+            x2={0}
+            y2={height}
+            gradientUnits="userSpaceOnUse"
+          >
+            <Stop
+              offset={fillShadowGradientFromOffset}
+              stopColor={fillShadowGradientFrom}
+              stopOpacity={fillShadowGradientFromOpacity}
+            />
+            <Stop
+              offset={fillShadowGradientToOffset}
+              stopColor={fillShadowGradientTo || fillShadowGradientFrom}
+              stopOpacity={fillShadowGradientToOpacity || 0}
+            />
+          </LinearGradient>
         </Defs>
       );
     },
@@ -342,6 +307,8 @@ export const useAbstractChart = (props: AbstractChartProps & any) => {
   );
 
   return {
+    min,
+    max,
     calcedScale,
     calcBaseHeight,
     calcHeight,
@@ -354,7 +321,7 @@ export const useAbstractChart = (props: AbstractChartProps & any) => {
 };
 
 export const useBaseChart = (props: AbstractChartProps & any) => {
-  const abstractChart = useAbstractChart(props);
+  const { min, max, ...abstractChart } = useAbstractChart(props);
 
   const renderHorizontalLines = useCallback(
     (config: any) => {
@@ -413,10 +380,9 @@ export const useBaseChart = (props: AbstractChartProps & any) => {
   );
 
   const renderHorizontalLabels = useCallback(
-    (config: Omit<AbstractChartConfig, "data"> & { data: number[] }) => {
+    (config: Omit<AbstractChartConfig, "data">) => {
       const {
         count,
-        data,
         height,
         paddingTop,
         paddingRight,
@@ -432,12 +398,12 @@ export const useBaseChart = (props: AbstractChartProps & any) => {
 
         if (count === 1) {
           yLabel = `${yAxisLabel}${formatYLabel(
-            data[0].toFixed(decimalPlaces)
+            max.toFixed(decimalPlaces)
           )}${yAxisSuffix}`;
         } else {
           const label = props.fromZero
-            ? (abstractChart.calcedScale / count) * i + Math.min(...data, 0)
-            : (abstractChart.calcedScale / count) * i + Math.min(...data);
+            ? (abstractChart.calcedScale / count) * i + Math.min(min, 0)
+            : (abstractChart.calcedScale / count) * i + min;
           yLabel = `${yAxisLabel}${formatYLabel(
             label.toFixed(decimalPlaces)
           )}${yAxisSuffix}`;
@@ -476,7 +442,9 @@ export const useBaseChart = (props: AbstractChartProps & any) => {
       props.fromZero,
       abstractChart.calcedScale,
       abstractChart.getPropsForLabels,
-      abstractChart.getPropsForHorizontalLabels
+      abstractChart.getPropsForHorizontalLabels,
+      min,
+      max
     ]
   );
 
@@ -489,7 +457,6 @@ export const useBaseChart = (props: AbstractChartProps & any) => {
       paddingRight,
       paddingTop,
       horizontalOffset = 0,
-      stackedBar = false,
       verticalLabelRotation = 0,
       formatXLabel = xLabel => xLabel,
       verticalLabelsHeight = DEFAULT_X_LABELS_HEIGHT,
@@ -518,9 +485,6 @@ export const useBaseChart = (props: AbstractChartProps & any) => {
       const fontSize = 12;
 
       let fac = 1;
-      if (stackedBar) {
-        fac = 0.71;
-      }
 
       return labels.map((label, i) => {
         if (hidePointsAtIndex.includes(i)) {

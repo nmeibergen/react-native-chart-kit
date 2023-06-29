@@ -1,11 +1,6 @@
 import { BaseChart as AbstractChart } from "./AbstractChart";
-import BarChart from "./BarChartHooks";
+import BarChart from "./BarChart";
 import HorizontalBarChart from "./HorizontalBarChart";
-// import PieChart from "./PieChart";
-// import ProgressChart from "./ProgressChart";
-import StackedBarChart from "./StackedBarChartHooks";
-// import ContributionGraph from "./contribution-graph";
-// import LineChart from "./line-chart";
 import MultiBarChart from "./MultiBarChart";
 
 export {
@@ -16,6 +11,5 @@ export {
   // PieChart,
   // ProgressChart,
   // ContributionGraph,
-  StackedBarChart,
   MultiBarChart
 };
